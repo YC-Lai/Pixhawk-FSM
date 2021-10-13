@@ -45,6 +45,7 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
 
 bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
                            pixhawk_fsm::TakeOff::Response& response) {
+    Move();
     Response attempt_response = attemptToCreateOperation(
         OperationIdentifier::TAKE_OFF,
         {std::make_shared<TakeOffOperation>(request.height), std::make_shared<HoldOperation>()});
@@ -56,6 +57,7 @@ bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
 
 bool Pixhawk_fsm::explore(pixhawk_fsm::Explore::Request& request,
                           pixhawk_fsm::Explore::Response& response) {
+    Move();
     Response attempt_response = attemptToCreateOperation(
         OperationIdentifier::EXPLORE,
         {std::make_shared<ExploreOperation>(request.path, request.point_of_interest),
@@ -70,7 +72,7 @@ bool Pixhawk_fsm::land(pixhawk_fsm::Land::Request& request, pixhawk_fsm::Land::R
     Response attempt_response = attemptToCreateOperation(
         OperationIdentifier::LAND,
         {std::make_shared<LandOperation>(), std::make_shared<LandOperation>()});
-
+    Land();
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;
@@ -78,7 +80,7 @@ bool Pixhawk_fsm::land(pixhawk_fsm::Land::Request& request, pixhawk_fsm::Land::R
 
 Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
     const OperationIdentifier& target_operation_identifier,
-    const std::list<std::shared_ptr<Operation>>& execution_queue) {
+    const std::shared_ptr<Operation>& target_execution) {
     if (target_operation_identifier == OperationIdentifier::LAND) {
         Land();
     } else {
@@ -108,7 +110,7 @@ Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
     // }
 
     got_new_operation = true;
-    operation_execution_queue = execution_queue;
+    operation_execution_queue.emplace_back(target_execution);
     current_operation =
         getStringFromOperationIdentifier(operation_execution_queue.front()->identifier);
 
@@ -170,7 +172,13 @@ void Pixhawk_fsm::ST_Idle(EventData* pData) {
 
 void Pixhawk_fsm::ST_Land(EventData* pData) {}
 
-void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Pixhawk_fsmData> setpoint) {}
+void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Pixhawk_fsmData> setpoint) {
+    got_new_operation = true;
+    operation_execution_queue.emplace_back(std::make_shared<TakeOffOperation>(request.height));
+    operation_execution_queue.emplace_back(std::make_shared<HoldOperation>());
+    current_operation =
+        getStringFromOperationIdentifier(operation_execution_queue.front()->identifier);
+}
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Pixhawk_fsmData> setpoint) {}
 

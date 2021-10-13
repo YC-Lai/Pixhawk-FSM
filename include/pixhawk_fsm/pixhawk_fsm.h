@@ -239,7 +239,7 @@ class Pixhawk_fsm : public StateMachine {
      * @return Response based on the result of the attempt.
      */
     Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier,
-                                      const std::list<std::shared_ptr<Operation>>& execution_queue);
+                                      const std::shared_ptr<Operation>& target_execution);
 
     /**
      * @brief Retrieves the operation identifier from @p operation_ptr
