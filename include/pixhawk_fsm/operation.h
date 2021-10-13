@@ -173,11 +173,11 @@ class Operation {
     virtual void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
 
     /**
-     * The #Fluid class has to be able to e.g. set the current pose if we transition to a operation
+     * The #Pixhawk_fsm class has to be able to e.g. set the current pose if we transition to a operation
      * which requires to initially know where we are, e. g. land or take off. In that case we can
      * execute the operation from the current pose, and we don't have to wait for the pose callback
      * and thus halt the system.
      */
-    friend class Fluid;
+    friend class Pixhawk_fsm;
 };
 #endif

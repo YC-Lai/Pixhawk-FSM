@@ -4,6 +4,10 @@
 
 #include <iostream>
 
+#include "hold_operation.h"
+#include "mavros_interface.h"
+#include "take_off_operation.h"
+
 /******************************************************************************************************
  *                                          Singleton *
  ******************************************************************************************************/
@@ -39,6 +43,104 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
  *                                          Operations *
  ******************************************************************************************************/
 
+bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
+                           pixhawk_fsm::TakeOff::Response& response) {
+    Response attempt_response = attemptToCreateOperation(
+        OperationIdentifier::TAKE_OFF,
+        {std::make_shared<TakeOffOperation>(request.height), std::make_shared<HoldOperation>()});
+
+    response.message = attempt_response.message;
+    response.success = attempt_response.success;
+    return true;
+}
+
+bool Pixhawk_fsm::explore(pixhawk_fsm::Explore::Request& request,
+                          pixhawk_fsm::Explore::Response& response) {
+    Response attempt_response = attemptToCreateOperation(
+        OperationIdentifier::EXPLORE,
+        {std::make_shared<ExploreOperation>(request.path, request.point_of_interest),
+         std::make_shared<HoldOperation>()});
+
+    response.message = attempt_response.message;
+    response.success = attempt_response.success;
+    return true;
+}
+
+bool Pixhawk_fsm::land(pixhawk_fsm::Land::Request& request, pixhawk_fsm::Land::Response& response) {
+    Response attempt_response = attemptToCreateOperation(
+        OperationIdentifier::LAND,
+        {std::make_shared<LandOperation>(), std::make_shared<LandOperation>()});
+
+    response.message = attempt_response.message;
+    response.success = attempt_response.success;
+    return true;
+}
+
+Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
+    const OperationIdentifier& target_operation_identifier,
+    const std::list<std::shared_ptr<Operation>>& execution_queue) {
+    if (target_operation_identifier == OperationIdentifier::LAND) {
+        Land();
+    } else {
+        Move();
+    }
+
+    Response response;
+    // OperationIdentifier current_operation_identifier =
+    //     getOperationIdentifierForOperation(current_operation_ptr);
+
+    // response.success = isValidOperation(current_operation_identifier,
+    // target_operation_identifier);
+
+    // if (!response.success) {
+    //     response.message = "Cannot transition to " +
+    //                        getStringFromOperationIdentifier(target_operation_identifier) +
+    //                        " from " +
+    //                        getStringFromOperationIdentifier(current_operation_identifier);
+    //     std::cout << response.message << std::endl;
+    //     return response;
+    // } else {
+    //     ROS_INFO_STREAM(ros::this_node::getName().c_str()
+    //                     << ": "
+    //                     << "Transitioning to "
+    //                     <<
+    //                     getStringFromOperationIdentifier(target_operation_identifier).c_str());
+    // }
+
+    got_new_operation = true;
+    operation_execution_queue = execution_queue;
+    current_operation =
+        getStringFromOperationIdentifier(operation_execution_queue.front()->identifier);
+
+    return response;
+}
+
+std::shared_ptr<Operation> Pixhawk_fsm::performOperationTransition(
+    std::shared_ptr<Operation> current_operation_ptr,
+    std::shared_ptr<Operation> target_operation_ptr) {
+    ros::Rate rate(Pixhawk_fsm::getInstance().configuration.refresh_rate);
+    MavrosInterface mavros_interface;
+
+    // Loop until the Pixhawk mode is set.
+    const std::string target_operation_pixhawk_mode =
+        getPixhawkModeForOperationIdentifier(target_operation_ptr->identifier);
+    while (ros::ok() && !mavros_interface.attemptToSetMode(target_operation_pixhawk_mode)) {
+        ros::spinOnce();
+        rate.sleep();
+    }
+
+    if (current_operation_ptr) {
+        target_operation_ptr->current_pose = current_operation_ptr->getCurrentPose();
+        target_operation_ptr->current_twist = current_operation_ptr->getCurrentTwist();
+    }
+
+    return target_operation_ptr;
+}
+
+/******************************************************************************************************
+ *                                          State Machine *
+ ******************************************************************************************************/
+
 // Land drone external event
 void Pixhawk_fsm::Land(void) {
     BEGIN_TRANSITION_MAP                     // - Current State -
@@ -72,4 +174,58 @@ void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Pixhawk_fsmData> setpoint) {}
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Pixhawk_fsmData> setpoint) {}
 
-void Pixhawk_fsm::ST_Hold(std::shared_ptr<Pixhawk_fsmData> setpoint) {}
+void Pixhawk_fsm::ST_Hold(EventData* pData) {}
+
+/******************************************************************************************************
+ *                                          Helpers *
+ ******************************************************************************************************/
+
+OperationIdentifier Pixhawk_fsm::getOperationIdentifierForOperation(
+    std::shared_ptr<Operation> operation_ptr) {
+    if (!operation_ptr) {
+        return OperationIdentifier::UNDEFINED;
+    }
+
+    return operation_ptr->identifier;
+}
+
+/******************************************************************************************************
+ *                                          Main Logic *
+ ******************************************************************************************************/
+
+void Pixhawk_fsm::run() {
+    ros::Rate rate(configuration.refresh_rate);
+    bool has_called_completion = false;
+
+    while (ros::ok()) {
+        got_new_operation = false;
+        if (!operation_execution_queue.empty()) {
+            current_operation_ptr = performOperationTransition(current_operation_ptr,
+                                                               operation_execution_queue.front());
+            operation_execution_queue.pop_front();
+            has_called_completion = false;
+        }
+
+        // If we are at the steady operation, we call the completion service
+        if (operation_execution_queue.empty() && !has_called_completion) {
+            std::cout << "completion" << std::endl;
+            pixhawk_fsm::OperationCompletion operation_completion;
+            operation_completion.request.operation = current_operation;
+            operation_completion_client.call(operation_completion);
+            has_called_completion = true;
+        }
+
+        if (current_operation_ptr) {
+            std::cout << getPixhawkModeForOperationIdentifier(current_operation_ptr->identifier)
+                      << std::endl;
+            getStatusPublisherPtr()->status.current_operation = current_operation;
+            getStatusPublisherPtr()->status.pixhawk_mode =
+                getPixhawkModeForOperationIdentifier(current_operation_ptr->identifier);
+            current_operation_ptr->perform([&]() -> bool { return !got_new_operation; },
+                                           operation_execution_queue.empty());
+        }
+
+        ros::spinOnce();
+        rate.sleep();
+    }
+}

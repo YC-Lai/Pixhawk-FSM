@@ -7,7 +7,7 @@
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <mavros_msgs/CommandTOL.h>
 
-#include "fluid.h"
+#include "pixhawk_fsm.h"
 #include "mavros_interface.h"
 #include "util.h"
 
@@ -16,9 +16,9 @@ TakeOffOperation::TakeOffOperation(float height_setpoint)
 
 bool TakeOffOperation::hasFinishedExecution() const {
     const float distance_threshold =
-        Fluid::getInstance().configuration.distance_completion_threshold;
+        Pixhawk_fsm::getInstance().configuration.distance_completion_threshold;
     const float velocity_threshold =
-        Fluid::getInstance().configuration.velocity_completion_threshold;
+        Pixhawk_fsm::getInstance().configuration.velocity_completion_threshold;
     bool completed = Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) <
                          distance_threshold &&
                      std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
@@ -30,8 +30,8 @@ bool TakeOffOperation::hasFinishedExecution() const {
     return completed;
 }
 
-bool cb(fluid::OperationCompletion::Request& request,
-        fluid::OperationCompletion::Response& response) {
+bool cb(pixhawk_fsm::OperationCompletion::Request& request,
+        pixhawk_fsm::OperationCompletion::Response& response) {
     return true;
 }
 
@@ -50,15 +50,15 @@ void TakeOffOperation::initialize() {
     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                     << ": Set minimum take-off altitude to " << height_setpoint);
 
-    mavros_interface.establishContactToArduPilot();
-    Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_ardupilot = 1;
+    mavros_interface.establishContactToPixhawk();
+    Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.linked_with_pixhawk = 1;
 
-    mavros_interface.requestArm(Fluid::getInstance().configuration.should_auto_arm);
-    Fluid::getInstance().getStatusPublisherPtr()->status.armed =
-        Fluid::getInstance().configuration.should_auto_arm;
+    mavros_interface.requestArm(Pixhawk_fsm::getInstance().configuration.should_auto_arm);
+    Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.armed =
+        Pixhawk_fsm::getInstance().configuration.should_auto_arm;
 
-    mavros_interface.requestOffboard(Fluid::getInstance().configuration.should_auto_offboard);
-    Fluid::getInstance().getStatusPublisherPtr()->status.ardupilot_mode = ARDUPILOT_MODE_OFFBOARD;
+    mavros_interface.requestOffboard(Pixhawk_fsm::getInstance().configuration.should_auto_offboard);
+    Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.pixhawk_mode = PIXHAWK_MODE_OFFBOARD;
 
     // Spin until we retrieve the first pose
     while (ros::ok() && getCurrentPose().header.seq == 0) {

@@ -4,12 +4,12 @@
 
 #include "hold_operation.h"
 
-#include "fluid.h"
+#include "pixhawk_fsm.h"
 
 HoldOperation::HoldOperation() : Operation(OperationIdentifier::HOLD, true, false) {}
 
 bool HoldOperation::hasFinishedExecution() const {
-    const float threshold = Fluid::getInstance().configuration.velocity_completion_threshold;
+    const float threshold = Pixhawk_fsm::getInstance().configuration.velocity_completion_threshold;
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < threshold &&
                                std::abs(getCurrentTwist().twist.linear.y) < threshold &&
                                std::abs(getCurrentTwist().twist.linear.z) < threshold;

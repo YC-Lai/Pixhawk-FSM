@@ -8,6 +8,7 @@
 #include <pixhawk_fsm/TakeOff.h>
 #include <ros/ros.h>
 
+#include "operation.h"
 #include "state_machine.h"
 #include "status_publisher.h"
 
@@ -131,8 +132,6 @@ class Pixhawk_fsm : public StateMachine {
     void run();
 
    private:
-    Pixhawk_fsm(const PixhawkConfiguration configuration);
-
     /**
      * @brief Only instance to this class.
      */
@@ -142,6 +141,48 @@ class Pixhawk_fsm : public StateMachine {
      * @brief Interface for publishing status messages.
      */
     std::shared_ptr<StatusPublisher> status_publisher_ptr;
+
+    /**
+     * @brief Sets up the service servers and clients.
+     */
+    Pixhawk_fsm(const PixhawkConfiguration configuration);
+
+    /**
+     * @brief Mapping for responses in service calls.
+     */
+    struct Response {
+        /**
+         * @brief Whether the service call was successful.
+         */
+        bool success;
+
+        /**
+         * @brief Error messsage (if any)
+         */
+        std::string message;
+    };
+
+    /**
+     * @brief The current operation being executed
+     */
+    std::shared_ptr<Operation> current_operation_ptr;
+
+    /**
+     * @brief The current operation being executed, essentially the current item in the list of
+     * operations in #operation_execution_queue.
+     */
+    std::string current_operation;
+
+    /**
+     * @brief The list of operations which shall be executed.
+     */
+    std::list<std::shared_ptr<Operation>> operation_execution_queue;
+
+    /**
+     * @brief Flag for checking if one of the service handlers were called and that the FSM should
+     * transition to another operation.
+     */
+    bool got_new_operation = false;
 
     /**
      * @brief Used to initialize the service servers.
@@ -188,6 +229,40 @@ class Pixhawk_fsm : public StateMachine {
      */
     bool land(pixhawk_fsm::Land::Request& request, pixhawk_fsm::Land::Response& response);
 
+    /**
+     * @brief Will check if the operation to @p target_operation_identifier is valid and update the
+     * #operation_execution_queue and #current_operation if it is.
+     *
+     * @param target_operation_identifier The target operation.
+     * @param execution_queue The operation execution queue for the operation.
+     *
+     * @return Response based on the result of the attempt.
+     */
+    Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier,
+                                      const std::list<std::shared_ptr<Operation>>& execution_queue);
+
+    /**
+     * @brief Retrieves the operation identifier from @p operation_ptr
+     *
+     * @param operation_ptr The operation.
+     *
+     * @return operation identifier if operation_ptr is not nullptr, #OperationIdentifier::UNDEFINED
+     * if else.
+     */
+    OperationIdentifier getOperationIdentifierForOperation(
+        std::shared_ptr<Operation> operation_ptr);
+
+    /**
+     * @brief Performs operation transition between @p current_operation_ptr and @p target_operation_ptr.
+     *
+     * @param current_operation_ptr The current operation.
+     * @param target_operation_ptr The target operation.
+     *
+     * @return The new operation (@p target_operation_ptr).
+     */
+    std::shared_ptr<Operation> performOperationTransition(std::shared_ptr<Operation> current_operation_ptr,
+                                                          std::shared_ptr<Operation> target_operation_ptr);
+
     // external events taken by this state machine
     void Land();
     void Move();
@@ -197,7 +272,7 @@ class Pixhawk_fsm : public StateMachine {
     void ST_Land(EventData*);
     void ST_Takeoff(std::shared_ptr<Pixhawk_fsmData>);
     void ST_Move(std::shared_ptr<Pixhawk_fsmData>);
-    void ST_Hold(std::shared_ptr<Pixhawk_fsmData>);
+    void ST_Hold(EventData*);
 
     // state map to define state function order
     BEGIN_STATE_MAP

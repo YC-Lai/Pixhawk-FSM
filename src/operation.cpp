@@ -9,7 +9,7 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-#include "fluid.h"
+#include "pixhawk_fsm.h"
 #include "util.h"
 
 Operation::Operation(const OperationIdentifier& identifier, const bool& steady,
@@ -23,7 +23,7 @@ Operation::Operation(const OperationIdentifier& identifier, const bool& steady,
     setpoint_publisher =
         node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
     setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-    rate_int = (int)Fluid::getInstance().configuration.refresh_rate;
+    rate_int = (int)Pixhawk_fsm::getInstance().configuration.refresh_rate;
 }
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
@@ -72,10 +72,10 @@ void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_
     do {
         tick();
         if (autoPublish) publishSetpoint();
-        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.x = setpoint.position.x;
-        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.y = setpoint.position.y;
-        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.z = setpoint.position.z;
-        Fluid::getInstance().getStatusPublisherPtr()->publish();
+        Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.setpoint.x = setpoint.position.x;
+        Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.setpoint.y = setpoint.position.y;
+        Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.setpoint.z = setpoint.position.z;
+        Pixhawk_fsm::getInstance().getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
     } while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) &&

@@ -1,6 +1,7 @@
 #include "state_machine.h"
 
 #include <assert.h>
+#include <iostream>
 
 StateMachine::StateMachine(unsigned char maxStates)
     : _maxStates(maxStates), currentState(0), _eventGenerated(false), _pEventData(NULL) {}
@@ -10,6 +11,7 @@ StateMachine::StateMachine(unsigned char maxStates)
 void StateMachine::ExternalEvent(unsigned char newState, std::shared_ptr<EventData> pData) {
     // if we are supposed to ignore this event
     if (newState == EVENT_IGNORED) {
+        std::cout << "Cannot transition" << std::endl;
         // just delete the event data, if any
         // if (pData) delete pData;
     } else {
