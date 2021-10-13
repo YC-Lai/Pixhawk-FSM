@@ -16,6 +16,11 @@ find_package(catkin REQUIRED COMPONENTS
         message_generation
 )
 
+add_message_files(
+        FILES
+        PixhawkStatus.msg 
+)
+
 add_service_files(
         FILES
         OperationCompletion.srv
@@ -47,3 +52,9 @@ file(GLOB SRC "src/*.cpp")
 file(GLOB Operations_SRC "src/operations/*.cpp")
 
 #########################################################################################
+
+add_executable(pixhawk_fsm      src/nodes/main.cpp      ${SRC} ${Operations_SRC})
+
+add_dependencies(pixhawk_fsm    ${${PROJECT_NAME}_EXPORTED_TARGETS}     ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(pixhawk_fsm       ${catkin_LIBRARIES})

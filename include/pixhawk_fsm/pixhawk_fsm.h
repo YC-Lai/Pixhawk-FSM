@@ -2,25 +2,195 @@
 #define PIXHAWK_FSM_H
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <pixhawk_fsm/Explore.h>
+#include <pixhawk_fsm/Land.h>
+#include <pixhawk_fsm/OperationCompletion.h>
+#include <pixhawk_fsm/TakeOff.h>
 #include <ros/ros.h>
 
 #include "state_machine.h"
+#include "status_publisher.h"
 
 // structure to hold event data passed into state machine
 struct Pixhawk_fsmData : public EventData {
     geometry_msgs::Point offset;
 };
 
+/**
+ * @brief Defines all the parameters for Pixhawk.
+ */
+struct PixhawkConfiguration {
+    /**
+     * @brief whether ekf is used or not
+     */
+    const bool ekf;
+
+    /**
+     * @brief whether use_perception is used or not
+     */
+    const bool use_perception;
+
+    /**
+     * @brief The unified refresh rate across the operation machine.
+     */
+    const int refresh_rate;
+
+    /**
+     * @brief Whether the drone will arm automatically.
+     */
+    const bool should_auto_arm;
+
+    /**
+     * @brief Whether the drone will go into offboard mode automatically.
+     */
+    const bool should_auto_offboard;
+
+    /**
+     * @brief Specifies the radius for within we can say that the drone is at a given position.
+     */
+    const float distance_completion_threshold;
+
+    /**
+     * @brief Specifies how low the velocity has to be before we issue that a given operation has
+     * completed. This serves the purpose to prevent osciallations in the case when new operations
+     * are fired the moment the previous completes. With this threshold, we have to wait for the
+     * drone to be "steady" at the current position before moving on.
+     */
+    const float velocity_completion_threshold;
+
+    /**
+     * @brief Height used when e.g. 0 was given for a setpoint.
+     */
+    const float default_height;
+
+    /**
+     * @brief Show some debugging prints during the interact operation
+     */
+    const bool interaction_show_prints;
+
+    /**
+     * @brief Show some debugging prints during the interact operation
+     */
+    const float interact_max_vel;
+
+    /**
+     * @brief Use ground_truth data for interact operation.
+     */
+    const float interact_max_acc;
+
+    /**
+     * @brief max angle ardupilot parameter for the travel operation.
+     */
+    const float travel_max_angle;
+
+    /**
+     * @brief 3D offset of the Face_hugger compared to the drone center
+     */
+    const float* fh_offset;
+
+    /**
+     * @brief max speed ardupilot parameter for the travel operation.
+     */
+    const float travel_speed;
+
+    /**
+     * @brief max accel ardupilot parameter for the travel operation.
+     */
+    const float travel_accel;
+};
+
 class Pixhawk_fsm : public StateMachine {
    public:
-    Pixhawk_fsm();
+    /**
+     * @brief The configuration of the Pixhawk_fsm singleton.
+     */
+    const PixhawkConfiguration configuration;
 
-    // external events taken by this state machine
-    void Move();
+    /**
+     * @brief Initializes the Pixhawk_fsm singleton with a @p configuration.
+     *
+     * @param configuration The configuration of the Pixhawk_fsm singleton.
+     *
+     * @note Will only actually initialize if #instance_ptr is not nullptr.
+     */
+    static void initialize(const PixhawkConfiguration configuration);
+
+    /**
+     * @return The Pixhawk_fsm singleton instance.
+     */
+    static Pixhawk_fsm& getInstance();
+
+    /**
+     * @return The status publisher.
+     */
+    std::shared_ptr<StatusPublisher> getStatusPublisherPtr();
+
+    /**
+     * @brief Runs the operation macine.
+     */
+    void run();
 
    private:
-    // ros module
+    Pixhawk_fsm(const PixhawkConfiguration configuration);
+
+    /**
+     * @brief Only instance to this class.
+     */
+    static std::shared_ptr<Pixhawk_fsm> instance_ptr;
+
+    /**
+     * @brief Interface for publishing status messages.
+     */
+    std::shared_ptr<StatusPublisher> status_publisher_ptr;
+
+    /**
+     * @brief Used to initialize the service servers.
+     */
     ros::NodeHandle node_handle;
+
+    /**
+     * @brief The servers which advertise the operations.
+     */
+    ros::ServiceServer take_off_server, explore_server, land_server;
+
+    /**
+     * @brief Used to give completion calls of operations.
+     */
+    ros::ServiceClient operation_completion_client;
+
+    /**
+     * @brief Service handler for the take off service.
+     *
+     * @param request The take off request.
+     * @param response The take off response.
+     *
+     * @return true When the service call has been handled.
+     */
+    bool take_off(pixhawk_fsm::TakeOff::Request& request, pixhawk_fsm::TakeOff::Response& response);
+
+    /**
+     * @brief Service handler for the explore service.
+     *
+     * @param request The explore request.
+     * @param response The explore response.
+     *
+     * @return true When the service call has been handled.
+     */
+    bool explore(pixhawk_fsm::Explore::Request& request, pixhawk_fsm::Explore::Response& response);
+
+    /**
+     * @brief Service handler for the land service.
+     *
+     * @param request The land request.
+     * @param response The land response.
+     *
+     * @return true When the service call has been handled.
+     */
+    bool land(pixhawk_fsm::Land::Request& request, pixhawk_fsm::Land::Response& response);
+
+    // external events taken by this state machine
+    void Land();
+    void Move();
 
     // state machine state functions
     void ST_Idle(EventData*);
@@ -40,7 +210,7 @@ class Pixhawk_fsm : public StateMachine {
 
     // state enumeration order must match the order of state
     // method entries in the state map
-    enum E_States { ST_IDLE = 0, ST_LAND, ST_TAKEOFF, ST_MOVE, ST_Hold, ST_MAX_STATES };
+    enum E_States { ST_IDLE = 0, ST_LAND, ST_TAKEOFF, ST_MOVE, ST_HOLD, ST_MAX_STATES };
 };
 
 #endif  // PIXHAWK_FSM_H

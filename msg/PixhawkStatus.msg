@@ -1,0 +1,5 @@
+int8 armed
+int8 linked_with_pixhawk
+string pixhawk_mode
+string current_operation
+geometry_msgs/Point setpoint 
