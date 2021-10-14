@@ -8,12 +8,14 @@
 #include <pixhawk_fsm/TakeOff.h>
 #include <ros/ros.h>
 
+#include <memory>
+
 #include "operation.h"
 #include "state_machine.h"
 #include "status_publisher.h"
 
 // structure to hold event data passed into state machine
-struct Pixhawk_fsmData : public EventData {
+struct Setpoint_Data : public EventData {
     geometry_msgs::Point offset;
 };
 
@@ -238,8 +240,7 @@ class Pixhawk_fsm : public StateMachine {
      *
      * @return Response based on the result of the attempt.
      */
-    Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier,
-                                      const std::shared_ptr<Operation>& target_execution);
+    Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier);
 
     /**
      * @brief Retrieves the operation identifier from @p operation_ptr
@@ -253,15 +254,29 @@ class Pixhawk_fsm : public StateMachine {
         std::shared_ptr<Operation> operation_ptr);
 
     /**
-     * @brief Performs operation transition between @p current_operation_ptr and @p target_operation_ptr.
+     * @brief Validates if a given operation to @p target_operation_identifier is valid from @p
+     * current_operation_identifier.
+     *
+     * @param current_operation_identifier The current operation identifier.
+     * @param target_operation_identifier The target operation identifier of the operation.
+     *
+     * @return true if the operation is valid.
+     */
+    bool isValidOperation(const OperationIdentifier& current_operation_identifier,
+                          const OperationIdentifier& target_operation_identifier) const;
+
+    /**
+     * @brief Performs operation transition between @p current_operation_ptr and @p
+     * target_operation_ptr.
      *
      * @param current_operation_ptr The current operation.
      * @param target_operation_ptr The target operation.
      *
      * @return The new operation (@p target_operation_ptr).
      */
-    std::shared_ptr<Operation> performOperationTransition(std::shared_ptr<Operation> current_operation_ptr,
-                                                          std::shared_ptr<Operation> target_operation_ptr);
+    std::shared_ptr<Operation> performOperationTransition(
+        std::shared_ptr<Operation> current_operation_ptr,
+        std::shared_ptr<Operation> target_operation_ptr);
 
     // external events taken by this state machine
     void Land();
@@ -270,8 +285,8 @@ class Pixhawk_fsm : public StateMachine {
     // state machine state functions
     void ST_Idle(EventData*);
     void ST_Land(EventData*);
-    void ST_Takeoff(std::shared_ptr<Pixhawk_fsmData>);
-    void ST_Move(std::shared_ptr<Pixhawk_fsmData>);
+    void ST_Takeoff(std::shared_ptr<Setpoint_Data>);
+    void ST_Move(std::shared_ptr<Setpoint_Data>);
     void ST_Hold(EventData*);
 
     // state map to define state function order

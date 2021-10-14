@@ -5,7 +5,6 @@
 #ifndef STATUS_PUBLISHER_H
 #define STATUS_PUBLISHER_H
 
-#include <ascend_msgs/FluidStatus.h>
 #include <pixhawk_fsm/PixhawkStatus.h>
 #include <nav_msgs/Path.h>
 #include <ros/ros.h>

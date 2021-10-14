@@ -7,7 +7,6 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
         cmake_modules
         roscpp
-        ascend_msgs
         std_msgs
         visualization_msgs
         tf2
@@ -37,7 +36,7 @@ generate_messages(
 
 catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS message_runtime ascend_msgs roscpp 
+        CATKIN_DEPENDS message_runtime roscpp 
 )
 
 #########################################################################################
