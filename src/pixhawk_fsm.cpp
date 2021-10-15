@@ -49,8 +49,9 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
 bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
                            pixhawk_fsm::TakeOff::Response& response) {
     auto setpoint = std::make_shared<Setpoint_Data>();
-    setpoint->offset.x = setpoint->offset.y = 0;
-    setpoint->offset.z = request.height;
+    setpoint->point_of_interest.x = setpoint->point_of_interest.y = 0;
+    setpoint->point_of_interest.z = request.height;
+
     Response attempt_response = attemptToCreateOperation(OperationIdentifier::TAKE_OFF, setpoint);
     response.message = attempt_response.message;
     response.success = attempt_response.success;
@@ -59,8 +60,11 @@ bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
 
 bool Pixhawk_fsm::explore(pixhawk_fsm::Explore::Request& request,
                           pixhawk_fsm::Explore::Response& response) {
-    Response attempt_response = attemptToCreateOperation(OperationIdentifier::EXPLORE);
+    auto setpoint = std::make_shared<Setpoint_Data>();
+    setpoint->point_of_interest = request.point_of_interest;
+    setpoint->path = request.path;
 
+    Response attempt_response = attemptToCreateOperation(OperationIdentifier::EXPLORE, setpoint);
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;
@@ -167,14 +171,15 @@ void Pixhawk_fsm::ST_Land(EventData* pData) {
 }
 
 void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
-    operation_execution_queue = {std::make_shared<TakeOffOperation>(setpoint->offset.z),
+    operation_execution_queue = {std::make_shared<TakeOffOperation>(setpoint->point_of_interest.z),
                                  std::make_shared<HoldOperation>()};
     got_new_operation = true;
 }
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {
-    // operation_execution_queue = {std::make_shared<ExploreOperation>(NULL, NULL),
-    //                              std::make_shared<HoldOperation>()};
+    operation_execution_queue = {
+        std::make_shared<ExploreOperation>(setpoint->path, setpoint->point_of_interest),
+        std::make_shared<HoldOperation>()};
     got_new_operation = true;
 }
 

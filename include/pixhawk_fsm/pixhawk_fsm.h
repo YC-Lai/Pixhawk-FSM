@@ -18,7 +18,8 @@
 
 // structure to hold event data passed into state machine
 struct Setpoint_Data : public EventData {
-    geometry_msgs::Point offset;
+    geometry_msgs::Point point_of_interest;
+    std::vector<geometry_msgs::Point> path;
 };
 
 /**
