@@ -8,6 +8,7 @@
 #include <pixhawk_fsm/TakeOff.h>
 #include <ros/ros.h>
 
+#include <map>
 #include <memory>
 
 #include "operation.h"
@@ -240,7 +241,8 @@ class Pixhawk_fsm : public StateMachine {
      *
      * @return Response based on the result of the attempt.
      */
-    Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier);
+    Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier,
+                                      std::shared_ptr<Setpoint_Data> setPoint = NULL);
 
     /**
      * @brief Retrieves the operation identifier from @p operation_ptr
@@ -279,8 +281,8 @@ class Pixhawk_fsm : public StateMachine {
         std::shared_ptr<Operation> target_operation_ptr);
 
     // external events taken by this state machine
-    void Land();
-    void Move();
+    void Land(void);
+    void Move(std::shared_ptr<Setpoint_Data> pData);
 
     // state machine state functions
     void ST_Idle(EventData*);

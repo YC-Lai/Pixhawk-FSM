@@ -5,6 +5,8 @@ std::string getPixhawkModeForOperationIdentifier(
     switch (operation_identifier) {
         case OperationIdentifier::LAND:
             return PIXHAWK_MODE_LAND;
+        case OperationIdentifier::HOLD:
+            return PIXHAWK_MODE_HOLD;
         default:
             return PIXHAWK_MODE_OFFBOARD;
     }

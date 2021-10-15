@@ -1,0 +1,53 @@
+<launch>
+  <arg name="ekf"                                     default="false"/>
+  <arg name="use_perception"                         default="false"/>
+  <arg name="fcu_url"/>
+  <arg name="refresh_rate"                            default="20"/>
+  <arg name="should_auto_arm"/>
+  <arg name="should_auto_offboard"/>
+  <arg name="distance_completion_threshold"           default="0.30"/>
+  <arg name="velocity_completion_threshold"           default="0.10"/>
+  <arg name="default_height"                          default="2.0"/>
+  <arg name="launch_rviz"/> 
+  
+  <arg name="interaction_show_prints"                 default="false"/>
+  <arg name="interaction_max_vel"                     default="0.30"/>
+  <arg name="interaction_max_acc"                     default="0.23"/>
+  <arg name="travel_max_angle"                        default="70"/>
+  <arg name="travel_speed"                            default="15"/>
+  <arg name="travel_accel"                            default="10"/>
+  
+  <arg name="fh_offset_x"                             default="0.42"/>
+  <arg name="fh_offset_y"                             default="0.02"/>
+  <arg name="fh_offset_z"                             default="-0.10"/>
+  
+
+  <node name="pixhawk_fsm" pkg="pixhawk_fsm" type="pixhawk_fsm" output="screen"> 
+    <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
+    <param name="should_auto_arm"                     value="$(arg should_auto_arm)"/>
+    <param name="should_auto_offboard"                value="$(arg should_auto_offboard)"/>
+    <param name="distance_completion_threshold"       value="$(arg distance_completion_threshold)"/>
+    <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
+    <param name="default_height"                      value="$(arg default_height)"/>
+    <param name="ekf"                                 value="$(arg ekf)"/>
+    <param name="use_perception"                      value="$(arg use_perception)"/>
+    
+    <param name="interaction_show_prints"             value="$(arg interaction_show_prints)"/>
+    <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
+    <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
+    <param name="travel_max_angle"                    value="$(arg travel_max_angle)"/>
+    <param name="travel_speed"                        value="$(arg travel_speed)"/>
+    <param name="travel_accel"                        value="$(arg travel_accel)"/>
+
+    <param name="travel_max_angle"                 value="$(arg travel_max_angle)"/>
+    <param name="travel_speed"                 value="$(arg travel_speed)"/>
+    <param name="travel_accel"                 value="$(arg travel_accel)"/>
+    <param name="fh_offset_x"                         value="$(arg fh_offset_x)"/>
+    <param name="fh_offset_y"                         value="$(arg fh_offset_y)"/>
+    <param name="fh_offset_z"                         value="$(arg fh_offset_z)"/>
+
+  </node>
+
+  <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
+
+</launch>

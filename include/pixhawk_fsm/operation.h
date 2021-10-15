@@ -38,7 +38,7 @@ class Operation {
      *
      * @param pose Pose retrieved from the callback.
      */
-    void poseCallback(const nav_msgs::OdometryConstPtr pose);
+    void poseCallback(const geometry_msgs::PoseStamped::ConstPtr pose);
 
     /**
      * @brief Gets the current twist.

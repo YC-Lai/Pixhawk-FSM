@@ -53,7 +53,10 @@ file(GLOB Operations_SRC "src/operations/*.cpp")
 #########################################################################################
 
 add_executable(pixhawk_fsm      src/nodes/main.cpp      ${SRC} ${Operations_SRC})
+add_executable(keyboard_client  src/client/keyboard_client.cpp        ${SRC} ${Operations_SRC})
 
 add_dependencies(pixhawk_fsm    ${${PROJECT_NAME}_EXPORTED_TARGETS}     ${catkin_EXPORTED_TARGETS})
+add_dependencies(keyboard_client        ${${PROJECT_NAME}_EXPORTED_TARGETS}     ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(pixhawk_fsm       ${catkin_LIBRARIES})
+target_link_libraries(keyboard_client   ${catkin_LIBRARIES})

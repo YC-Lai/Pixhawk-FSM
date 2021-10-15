@@ -9,6 +9,7 @@
 #include <string>
 
 const std::string PIXHAWK_MODE_OFFBOARD = "OFFBOARD";
+const std::string PIXHAWK_MODE_HOLD = "AUTO.LOITER";
 const std::string PIXHAWK_MODE_LAND = "AUTO.LAND";
 
 /**

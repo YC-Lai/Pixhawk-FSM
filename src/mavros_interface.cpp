@@ -155,7 +155,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     // Is this necessary with Pixhawk? -Erlend
     setpoint.header.frame_id = "map";
     setpoint.type_mask = TypeMask::IDLE;
-    setpoint.coordinate_frame = 0;
+    setpoint.coordinate_frame = 1;
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
         setpoint.header.stamp = ros::Time::now();

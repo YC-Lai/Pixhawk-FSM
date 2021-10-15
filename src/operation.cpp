@@ -28,10 +28,10 @@ Operation::Operation(const OperationIdentifier& identifier, const bool& steady,
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
 
-void Operation::poseCallback(const nav_msgs::Odometry::ConstPtr pose) {
-    current_pose.pose = pose->pose.pose;
+void Operation::poseCallback(const geometry_msgs::PoseStamped::ConstPtr pose) {
+    current_pose.pose = pose->pose;
     current_pose.header = pose->header;
-    current_accel = orientation_to_acceleration(pose->pose.pose.orientation);
+    current_accel = orientation_to_acceleration(pose->pose.orientation);
 }
 
 geometry_msgs::TwistStamped Operation::getCurrentTwist() const { return current_twist; }
