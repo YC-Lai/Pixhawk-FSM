@@ -4,10 +4,11 @@
 
 #include <iostream>
 
+#include "explore_operation.h"
 #include "hold_operation.h"
+#include "land_operation.h"
 #include "mavros_interface.h"
 #include "take_off_operation.h"
-#include "land_operation.h"
 
 /******************************************************************************************************
  *                                          Singleton *
@@ -79,7 +80,6 @@ Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
     if (target_operation_identifier == OperationIdentifier::LAND) {
         Land();
     } else {
-        std::cout << "call move!" << std::endl;
         Move(setPoint);
     }
 
@@ -142,7 +142,6 @@ void Pixhawk_fsm::Land(void) {
         TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Land
         TRANSITION_MAP_ENTRY(ST_LAND)        // ST_Takeoff
         TRANSITION_MAP_ENTRY(ST_LAND)        // ST_Move
-        TRANSITION_MAP_ENTRY(ST_LAND)        // ST_Hold
         END_TRANSITION_MAP(NULL)
 }
 
@@ -153,7 +152,6 @@ void Pixhawk_fsm::Move(std::shared_ptr<Setpoint_Data> pData) {
         TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Land
         TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Takeoff
         TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Move
-        TRANSITION_MAP_ENTRY(ST_MOVE)        // ST_Hold
         END_TRANSITION_MAP(pData)
 }
 
@@ -163,25 +161,20 @@ void Pixhawk_fsm::ST_Idle(EventData* pData) {
 }
 
 void Pixhawk_fsm::ST_Land(EventData* pData) {
-    std::cout << "Now in ST_Land" << std::endl;
     operation_execution_queue = {std::make_shared<LandOperation>(),
                                  std::make_shared<LandOperation>()};
     got_new_operation = true;
 }
 
 void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
-    std::cout << "Now in ST_Takeoff" << std::endl;
     operation_execution_queue = {std::make_shared<TakeOffOperation>(setpoint->offset.z),
                                  std::make_shared<HoldOperation>()};
-
     got_new_operation = true;
 }
 
-void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {}
-
-void Pixhawk_fsm::ST_Hold(EventData* pData) {
-    std::cout << "Now in ST_Hold" << std::endl;
-    operation_execution_queue = {std::make_shared<HoldOperation>()};
+void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {
+    // operation_execution_queue = {std::make_shared<ExploreOperation>(NULL, NULL),
+    //                              std::make_shared<HoldOperation>()};
     got_new_operation = true;
 }
 

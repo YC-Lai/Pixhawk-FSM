@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
         FILES
         PixhawkStatus.msg 
+        Path.msg
 )
 
 add_service_files(
@@ -26,6 +27,7 @@ add_service_files(
         Explore.srv
         Land.srv
         TakeOff.srv
+        ObstacleAvoidanceService.srv
 )
 
 generate_messages(

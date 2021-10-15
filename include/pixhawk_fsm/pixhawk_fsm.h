@@ -282,8 +282,7 @@ class Pixhawk_fsm : public StateMachine {
     void ST_Idle(EventData*);
     void ST_Land(EventData*);
     void ST_Takeoff(std::shared_ptr<Setpoint_Data>);
-    void ST_Move(std::shared_ptr<Setpoint_Data>);
-    void ST_Hold(EventData*);
+    void ST_Move(std::shared_ptr<Setpoint_Data>);;
 
     // state map to define state function order
     BEGIN_STATE_MAP
@@ -291,12 +290,11 @@ class Pixhawk_fsm : public StateMachine {
     STATE_MAP_ENTRY(&Pixhawk_fsm::ST_Land)
     STATE_MAP_ENTRY(&Pixhawk_fsm::ST_Takeoff)
     STATE_MAP_ENTRY(&Pixhawk_fsm::ST_Move)
-    STATE_MAP_ENTRY(&Pixhawk_fsm::ST_Hold)
     END_STATE_MAP
 
     // state enumeration order must match the order of state
     // method entries in the state map
-    enum E_States { ST_IDLE = 0, ST_LAND, ST_TAKEOFF, ST_MOVE, ST_HOLD, ST_MAX_STATES };
+    enum E_States { ST_IDLE = 0, ST_LAND, ST_TAKEOFF, ST_MOVE, ST_MAX_STATES };
 };
 
 #endif  // PIXHAWK_FSM_H

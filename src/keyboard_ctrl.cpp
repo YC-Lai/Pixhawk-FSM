@@ -95,6 +95,7 @@ void Keyboard_ctrl::ST_Land(EventData* pData) {
         if (!land_service_handle.response.success) {
             ROS_FATAL_STREAM(land_service_handle.response.message);
         } else {
+            ROS_INFO_STREAM("[Keyboard_client]: LAND success");
             is_executing_operation = true;
         }
     } else {
@@ -111,17 +112,15 @@ void Keyboard_ctrl::ST_Takeoff(std::shared_ptr<Keyboard_Data> pData) {
     ROS_INFO_STREAM("[Keyboard_client]: Current state: TAKEOFF");
     // set initial Keyboard_ctrl speed processing here
     pixhawk_fsm::TakeOff take_off_service_handle;
-    take_off_service_handle.request.height = 2.0f;
+    take_off_service_handle.request.height = 1.5f;
     if (take_off.call(take_off_service_handle)) {
         if (!take_off_service_handle.response.success) {
             ROS_FATAL_STREAM(take_off_service_handle.response.message);
-            InternalEvent(ST_IDLE);
         } else {
             is_executing_operation = true;
         }
     } else {
         ROS_FATAL("Failed to call take off service.");
-        InternalEvent(ST_IDLE);
     }
 }
 
@@ -149,12 +148,10 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_Data> pData) {
     if (explore.call(explore_service_handle)) {
         if (!explore_service_handle.response.success) {
             ROS_FATAL_STREAM(explore_service_handle.response.message);
-            InternalEvent(ST_LAND);
         } else {
             is_executing_operation = true;
         }
     } else {
         ROS_FATAL("Failed to call explore service.");
-        InternalEvent(ST_LAND);
     }
 }

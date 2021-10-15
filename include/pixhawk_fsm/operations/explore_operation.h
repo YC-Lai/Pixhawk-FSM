@@ -5,8 +5,8 @@
 #ifndef EXPLORE_OPERATION_H
 #define EXPLORE_OPERATION_H
 
-#include <ascend_msgs/ObstacleAvoidanceService.h>
-#include <ascend_msgs/Path.h>
+#include <pixhawk_fsm/ObstacleAvoidanceService.h>
+#include <pixhawk_fsm/Path.h>
 
 #include "move_operation.h"
 #include "operation_identifier.h"
@@ -63,7 +63,7 @@ class ExploreOperation : public MoveOperation {
      *
      * @param corrected_path The corrected path.
      */
-    void pathCallback(ascend_msgs::Path corrected_path);
+    void pathCallback(pixhawk_fsm::Path corrected_path);
 
    public:
     /**
