@@ -13,7 +13,7 @@
   <arg name="interaction_show_prints"                 default="false"/>
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
-  <arg name="travel_max_angle"                        default="70"/>
+  <arg name="travel_max_angle"                        default="70.0"/>
   <arg name="travel_speed"                            default="15"/>
   <arg name="travel_accel"                            default="10"/>
   

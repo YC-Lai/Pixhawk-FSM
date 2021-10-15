@@ -7,6 +7,7 @@
 #include "hold_operation.h"
 #include "mavros_interface.h"
 #include "take_off_operation.h"
+#include "land_operation.h"
 
 /******************************************************************************************************
  *                                          Singleton *
@@ -37,6 +38,7 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
     operation_completion_client = node_handle.serviceClient<pixhawk_fsm::OperationCompletion>(
         "pixhawk_fsm/operation_completion");
     status_publisher_ptr = std::make_shared<StatusPublisher>();
+    operation_ptr_mutex.reset(new std::mutex);
 }
 
 /******************************************************************************************************
@@ -81,11 +83,12 @@ Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
         Move(setPoint);
     }
 
+    std::lock_guard<std::mutex> operation_ptr_guard(*(operation_ptr_mutex));
     Response response;
     OperationIdentifier current_operation_identifier =
         getOperationIdentifierForOperation(current_operation_ptr);
 
-    response.success = isValidOperation(current_operation_identifier, target_operation_identifier);
+    response.success = StateMachine::isValidOperation;
 
     if (!response.success) {
         response.message = "Cannot transition to " +
@@ -107,15 +110,7 @@ Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
 std::shared_ptr<Operation> Pixhawk_fsm::performOperationTransition(
     std::shared_ptr<Operation> current_operation_ptr,
     std::shared_ptr<Operation> target_operation_ptr) {
-    std::cout << "Now in performOperationTransition" << std::endl;
-    OperationIdentifier current_operation_identifier =
-        getOperationIdentifierForOperation(current_operation_ptr);
-    OperationIdentifier target_operation_identifier =
-        getOperationIdentifierForOperation(target_operation_ptr);
-    std::cout << "current_operation: "
-              << getStringFromOperationIdentifier(current_operation_identifier) << std::endl;
-    std::cout << "target_operation: "
-              << getStringFromOperationIdentifier(target_operation_identifier) << std::endl;
+    std::lock_guard<std::mutex> operation_ptr_guard(*(operation_ptr_mutex));
 
     ros::Rate rate(Pixhawk_fsm::getInstance().configuration.refresh_rate);
     MavrosInterface mavros_interface;
@@ -124,7 +119,6 @@ std::shared_ptr<Operation> Pixhawk_fsm::performOperationTransition(
     const std::string target_operation_pixhawk_mode =
         getPixhawkModeForOperationIdentifier(target_operation_ptr->identifier);
     while (ros::ok() && !mavros_interface.attemptToSetMode(target_operation_pixhawk_mode)) {
-        std::cout << "Now in attemptToSetMode while loop" << std::endl;
         ros::spinOnce();
         rate.sleep();
     }
@@ -168,17 +162,19 @@ void Pixhawk_fsm::ST_Idle(EventData* pData) {
     ROS_INFO_STREAM("[Keyboard_client]: Current state: IDLE");
 }
 
-void Pixhawk_fsm::ST_Land(EventData* pData) {}
+void Pixhawk_fsm::ST_Land(EventData* pData) {
+    std::cout << "Now in ST_Land" << std::endl;
+    operation_execution_queue = {std::make_shared<LandOperation>(),
+                                 std::make_shared<LandOperation>()};
+    got_new_operation = true;
+}
 
 void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
     std::cout << "Now in ST_Takeoff" << std::endl;
-    std::cout << setpoint->offset.z << std::endl;
     operation_execution_queue = {std::make_shared<TakeOffOperation>(setpoint->offset.z),
                                  std::make_shared<HoldOperation>()};
 
     got_new_operation = true;
-    current_operation =
-        getStringFromOperationIdentifier(operation_execution_queue.front()->identifier);
 }
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {}
@@ -187,8 +183,6 @@ void Pixhawk_fsm::ST_Hold(EventData* pData) {
     std::cout << "Now in ST_Hold" << std::endl;
     operation_execution_queue = {std::make_shared<HoldOperation>()};
     got_new_operation = true;
-    current_operation =
-        getStringFromOperationIdentifier(operation_execution_queue.front()->identifier);
 }
 
 /******************************************************************************************************
@@ -204,15 +198,6 @@ OperationIdentifier Pixhawk_fsm::getOperationIdentifierForOperation(
     return operation_ptr->identifier;
 }
 
-bool Pixhawk_fsm::isValidOperation(const OperationIdentifier& current_operation_identifier,
-                                   const OperationIdentifier& target_operation_identifier) const {
-    if (current_operation_identifier == target_operation_identifier) {
-        return true;
-    }
-
-    return false;
-}
-
 /******************************************************************************************************
  *                                          Main Logic *
  ******************************************************************************************************/
@@ -224,17 +209,15 @@ void Pixhawk_fsm::run() {
     while (ros::ok()) {
         got_new_operation = false;
         if (!operation_execution_queue.empty()) {
-            std::cout << "operation_execution_queue's size: " << operation_execution_queue.size()
-                      << std::endl;
             current_operation_ptr = performOperationTransition(current_operation_ptr,
                                                                operation_execution_queue.front());
+            current_operation = getStringFromOperationIdentifier(current_operation_ptr->identifier);
             operation_execution_queue.pop_front();
             has_called_completion = false;
         }
 
         // If we are at the steady operation, we call the completion service
         if (operation_execution_queue.empty() && !has_called_completion) {
-            std::cout << "operation_execution_queue is empty" << std::endl;
             pixhawk_fsm::OperationCompletion operation_completion;
             operation_completion.request.operation = current_operation;
             operation_completion_client.call(operation_completion);

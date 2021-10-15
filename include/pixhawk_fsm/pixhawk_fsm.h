@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 
 #include "operation.h"
 #include "state_machine.h"
@@ -171,6 +172,11 @@ class Pixhawk_fsm : public StateMachine {
     std::shared_ptr<Operation> current_operation_ptr;
 
     /**
+     * @brief The current operation mutex to avoid data racing
+     */
+    std::unique_ptr<std::mutex> operation_ptr_mutex;
+
+    /**
      * @brief The current operation being executed, essentially the current item in the list of
      * operations in #operation_execution_queue.
      */
@@ -254,18 +260,6 @@ class Pixhawk_fsm : public StateMachine {
      */
     OperationIdentifier getOperationIdentifierForOperation(
         std::shared_ptr<Operation> operation_ptr);
-
-    /**
-     * @brief Validates if a given operation to @p target_operation_identifier is valid from @p
-     * current_operation_identifier.
-     *
-     * @param current_operation_identifier The current operation identifier.
-     * @param target_operation_identifier The target operation identifier of the operation.
-     *
-     * @return true if the operation is valid.
-     */
-    bool isValidOperation(const OperationIdentifier& current_operation_identifier,
-                          const OperationIdentifier& target_operation_identifier) const;
 
     /**
      * @brief Performs operation transition between @p current_operation_ptr and @p

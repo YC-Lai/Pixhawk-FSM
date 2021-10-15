@@ -12,12 +12,14 @@ void StateMachine::ExternalEvent(unsigned char newState, std::shared_ptr<EventDa
     // if we are supposed to ignore this event
     if (newState == EVENT_IGNORED) {
         std::cout << "Cannot transition" << std::endl;
+        isValidOperation = false;
         // just delete the event data, if any
         // if (pData) delete pData;
     } else {
         // TODO - capture software lock here for thread-safety if necessary
 
         // generate the event and execute the state engine
+        isValidOperation = true;
         InternalEvent(newState, pData);
         StateEngine();
 

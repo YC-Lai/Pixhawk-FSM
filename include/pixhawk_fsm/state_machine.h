@@ -23,6 +23,7 @@ class StateMachine {
     void ExternalEvent(unsigned char, std::shared_ptr<EventData> = NULL);
     void InternalEvent(unsigned char, std::shared_ptr<EventData> = NULL);
     virtual const StateStruct* GetStateMap() = 0;
+    bool isValidOperation;
 
    private:
     const unsigned char _maxStates;
