@@ -4,10 +4,12 @@
 
 #include <iostream>
 
-using namespace std;
+#include "util.h"
+
+// using namespace std;
 
 Keyboard_ctrl::Keyboard_ctrl(double speed, int update_rate)
-    : StateMachine(ST_MAX_STATES), move_speed(speed), update_rate(update_rate) {
+    : StateMachine(ST_MAX_STATES), move_speed(speed), update_rate(update_rate), path_density(4) {
     pose_subscriber =
         node_handle.subscribe("mavros/local_position/pose", 1, &Keyboard_ctrl::poseCallback, this);
     operation_completion_server = node_handle.advertiseService(
@@ -22,10 +24,6 @@ Keyboard_ctrl::Keyboard_ctrl(double speed, int update_rate)
     }
 
     pose_mutex_.reset(new std::mutex);
-    std::lock_guard<std::mutex> pose_guard(*(pose_mutex_));
-    current_pose.x = 0;
-    current_pose.y = 0;
-    current_pose.z = 0;
 }
 
 void Keyboard_ctrl::poseCallback(const geometry_msgs::PoseStampedConstPtr pose_ptr) {
@@ -83,19 +81,17 @@ void Keyboard_ctrl::Move(std::shared_ptr<Keyboard_Data> pData) {
 }
 
 // state machine sits here when Keyboard_ctrl is not running
-void Keyboard_ctrl::ST_Idle(EventData* pData) {
-    ROS_INFO_STREAM("[Keyboard_client]: Current state: IDLE");
-}
+void Keyboard_ctrl::ST_Idle(EventData* pData) { ROS_INFO_STREAM("[Client]: Current state: IDLE"); }
 
 // stop the Keyboard_ctrl
 void Keyboard_ctrl::ST_Land(EventData* pData) {
-    ROS_INFO_STREAM("[Keyboard_client]: Current state: LAND");
+    ROS_INFO_STREAM("[Client]: Current state: LAND");
     pixhawk_fsm::Land land_service_handle;
     if (land.call(land_service_handle)) {
         if (!land_service_handle.response.success) {
             ROS_FATAL_STREAM(land_service_handle.response.message);
         } else {
-            ROS_INFO_STREAM("[Keyboard_client]: LAND success");
+            ROS_INFO_STREAM("[Client]: LAND success");
             is_executing_operation = true;
         }
     } else {
@@ -109,7 +105,7 @@ void Keyboard_ctrl::ST_Land(EventData* pData) {
 
 // start the Keyboard_ctrl going
 void Keyboard_ctrl::ST_Takeoff(std::shared_ptr<Keyboard_Data> pData) {
-    ROS_INFO_STREAM("[Keyboard_client]: Current state: TAKEOFF");
+    ROS_INFO_STREAM("[Client]: Current state: TAKEOFF");
     // set initial Keyboard_ctrl speed processing here
     pixhawk_fsm::TakeOff take_off_service_handle;
     take_off_service_handle.request.height = 1.5f;
@@ -126,25 +122,29 @@ void Keyboard_ctrl::ST_Takeoff(std::shared_ptr<Keyboard_Data> pData) {
 
 // changes the Keyboard_ctrl speed once the Keyboard_ctrl is moving
 void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_Data> pData) {
-    ROS_INFO_STREAM("[Keyboard_client]: Current state: MOVE");
+    ROS_INFO_STREAM("[Client]: Current state: MOVE");
 
     // perform the change Keyboard_ctrl speed to pData->speed here
     geometry_msgs::Point target_point;
     geometry_msgs::Point offset = pData->offset;
     std::lock_guard<std::mutex> pose_guard(*(pose_mutex_));
     target_point.x = current_pose.x + (offset.x * move_speed / update_rate);
-    target_point.y = current_pose.y + (offset.x * move_speed / update_rate);
-    target_point.z = current_pose.z + (offset.x * move_speed / update_rate);
-    std::cout << "===getTargetPoint===" << std::endl;
-    std::cout << "current_pose.x: " << current_pose.x << std::endl;
-    std::cout << "current_pose.y: " << current_pose.y << std::endl;
-    std::cout << "current_pose.z: " << current_pose.z << std::endl;
-    std::cout << "offset.x: " << offset.z << std::endl;
-    std::cout << "offset.y: " << offset.z << std::endl;
-    std::cout << "offset.z: " << offset.z << std::endl;
+    target_point.y = current_pose.y + (offset.y * move_speed / update_rate);
+    target_point.z = current_pose.z + (offset.z * move_speed / update_rate);
+    std::cout << "===Get target Point===" << std::endl;
+    std::cout << "Current pose" << std::endl;
+    std::cout << "x: " << current_pose.x << ", y: " << current_pose.y << ", z: " << current_pose.z
+              << std::endl;
+    std::cout << "Target pose" << std::endl;
+    std::cout << "x: " << target_point.x << ", y: " << target_point.y << ", z: " << target_point.z
+              << std::endl;
+
+    std::vector<geometry_msgs::Point> path =
+        Util::createPath(current_pose, target_point, path_density);
 
     pixhawk_fsm::Explore explore_service_handle;
-    explore_service_handle.request.path = {target_point};
+    explore_service_handle.request.path = path;
+    explore_service_handle.request.point_of_interest = target_point;
     if (explore.call(explore_service_handle)) {
         if (!explore_service_handle.response.success) {
             ROS_FATAL_STREAM(explore_service_handle.response.message);

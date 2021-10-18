@@ -16,6 +16,7 @@
 // structure to hold event data passed into state machine
 struct Keyboard_Data : public EventData {
     geometry_msgs::Point offset;
+    geometry_msgs::Point point_of_interest;
 };
 
 // the Keyboard_ctrl state machine class
@@ -53,6 +54,7 @@ class Keyboard_ctrl : public StateMachine {
     double move_speed;
 
     int update_rate;
+    double path_density;
 
     std::unique_ptr<std::mutex> pose_mutex_;
 

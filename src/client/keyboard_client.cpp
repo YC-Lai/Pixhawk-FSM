@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
 
     int update_rate = 5;
-    double speed = 0.5;
+    double speed = 5;
     Keyboard_ctrl Keyboard_ctrl(speed, update_rate);
     auto data = std::make_shared<Keyboard_Data>();
 
@@ -73,19 +73,25 @@ int main(int argc, char** argv) {
     while (ros::ok()) {
         int c = getch_noblocking();
         if (c == '1') {
-            std::cout << "input: 1" << std::endl;
             Keyboard_ctrl.Move(data);
         } else if (c == '2') {
-            std::cout << "input: 2" << std::endl;
             Keyboard_ctrl.Land();
         } else if (c == 'w' || c == 'W') {
-            std::cout << "input: w" << std::endl;
+            data->offset.x = 1;
+            data->offset.y = data->offset.z = 0;
+            Keyboard_ctrl.Move(data);
         } else if (c == 's' || c == 'S') {
-            std::cout << "input: s" << std::endl;
+            data->offset.x = -1;
+            data->offset.y = data->offset.z = 0;
+            Keyboard_ctrl.Move(data);
         } else if (c == 'a' || c == 'A') {
-            std::cout << "input: a" << std::endl;
+            data->offset.y = -1;
+            data->offset.x = data->offset.z = 0;
+            Keyboard_ctrl.Move(data);
         } else if (c == 'd' || c == 'D') {
-            std::cout << "input: d" << std::endl;
+            data->offset.y = 1;
+            data->offset.x = data->offset.z = 0;
+            Keyboard_ctrl.Move(data);
         }
 
         ros::spinOnce();

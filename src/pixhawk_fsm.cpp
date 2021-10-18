@@ -63,7 +63,6 @@ bool Pixhawk_fsm::explore(pixhawk_fsm::Explore::Request& request,
     auto setpoint = std::make_shared<Setpoint_Data>();
     setpoint->point_of_interest = request.point_of_interest;
     setpoint->path = request.path;
-
     Response attempt_response = attemptToCreateOperation(OperationIdentifier::EXPLORE, setpoint);
     response.message = attempt_response.message;
     response.success = attempt_response.success;
@@ -154,8 +153,8 @@ void Pixhawk_fsm::Move(std::shared_ptr<Setpoint_Data> pData) {
     BEGIN_TRANSITION_MAP                     // - Current State -
     TRANSITION_MAP_ENTRY(ST_TAKEOFF)         // ST_Idle
         TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Land
-        TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Takeoff
-        TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Move
+        TRANSITION_MAP_ENTRY(ST_MOVE)        // ST_Takeoff
+        TRANSITION_MAP_ENTRY(ST_MOVE)        // ST_Move
         END_TRANSITION_MAP(pData)
 }
 

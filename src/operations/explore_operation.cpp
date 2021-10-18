@@ -4,6 +4,7 @@
 
 #include "explore_operation.h"
 
+#include <pixhawk_fsm/Path.h>
 #include <std_srvs/Trigger.h>
 
 #include <limits>
