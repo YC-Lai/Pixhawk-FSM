@@ -66,31 +66,28 @@ int main(int argc, char** argv) {
     int update_rate = 5;
     double speed = 5;
     Keyboard_ctrl Keyboard_ctrl(speed, update_rate);
-    auto data = std::make_shared<Keyboard_Data>();
+    auto data = std::make_shared<Keyboard_data>();
 
     ros::Rate rate(update_rate);
 
     while (ros::ok()) {
         int c = getch_noblocking();
         if (c == '1') {
+            data->input = MANEUVER::TAKEOFF;
             Keyboard_ctrl.Move(data);
         } else if (c == '2') {
             Keyboard_ctrl.Land();
         } else if (c == 'w' || c == 'W') {
-            data->offset.x = 1;
-            data->offset.y = data->offset.z = 0;
+            data->input = MANEUVER::FORWARD;
             Keyboard_ctrl.Move(data);
         } else if (c == 's' || c == 'S') {
-            data->offset.x = -1;
-            data->offset.y = data->offset.z = 0;
+            data->input = MANEUVER::BACKWARD;
             Keyboard_ctrl.Move(data);
         } else if (c == 'a' || c == 'A') {
-            data->offset.y = -1;
-            data->offset.x = data->offset.z = 0;
+            data->input = MANEUVER::LEFT;
             Keyboard_ctrl.Move(data);
         } else if (c == 'd' || c == 'D') {
-            data->offset.y = 1;
-            data->offset.x = data->offset.z = 0;
+            data->input = MANEUVER::RIGHT;
             Keyboard_ctrl.Move(data);
         }
 

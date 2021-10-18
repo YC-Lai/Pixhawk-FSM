@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include <cmath>
 #include <iostream>
 
 #include "util.h"
@@ -9,7 +10,7 @@
 // using namespace std;
 
 Keyboard_ctrl::Keyboard_ctrl(double speed, int update_rate)
-    : StateMachine(ST_MAX_STATES), move_speed(speed), update_rate(update_rate), path_density(4) {
+    : StateMachine(ST_MAX_STATES), move_speed(speed), update_rate(update_rate), path_density(2) {
     pose_subscriber =
         node_handle.subscribe("mavros/local_position/pose", 1, &Keyboard_ctrl::poseCallback, this);
     operation_completion_server = node_handle.advertiseService(
@@ -28,9 +29,7 @@ Keyboard_ctrl::Keyboard_ctrl(double speed, int update_rate)
 
 void Keyboard_ctrl::poseCallback(const geometry_msgs::PoseStampedConstPtr pose_ptr) {
     std::lock_guard<std::mutex> pose_guard(*(pose_mutex_));
-    current_pose.x = pose_ptr->pose.position.x;
-    current_pose.y = pose_ptr->pose.position.y;
-    current_pose.z = pose_ptr->pose.position.z;
+    current_pose = *(pose_ptr);
 }
 
 bool Keyboard_ctrl::OperationCompletionCallback(
@@ -71,7 +70,7 @@ void Keyboard_ctrl::Land(void) {
 }
 
 // move drone external event
-void Keyboard_ctrl::Move(std::shared_ptr<Keyboard_Data> pData) {
+void Keyboard_ctrl::Move(std::shared_ptr<Keyboard_data> pData) {
     BEGIN_TRANSITION_MAP                     // - Current State -
     TRANSITION_MAP_ENTRY(ST_TAKEOFF)         // ST_Idle
         TRANSITION_MAP_ENTRY(CANNOT_HAPPEN)  // ST_Land
@@ -104,7 +103,7 @@ void Keyboard_ctrl::ST_Land(EventData* pData) {
 }
 
 // start the Keyboard_ctrl going
-void Keyboard_ctrl::ST_Takeoff(std::shared_ptr<Keyboard_Data> pData) {
+void Keyboard_ctrl::ST_Takeoff(std::shared_ptr<Keyboard_data> pData) {
     ROS_INFO_STREAM("[Client]: Current state: TAKEOFF");
     // set initial Keyboard_ctrl speed processing here
     pixhawk_fsm::TakeOff take_off_service_handle;
@@ -121,26 +120,65 @@ void Keyboard_ctrl::ST_Takeoff(std::shared_ptr<Keyboard_Data> pData) {
 }
 
 // changes the Keyboard_ctrl speed once the Keyboard_ctrl is moving
-void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_Data> pData) {
+void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_data> pData) {
     ROS_INFO_STREAM("[Client]: Current state: MOVE");
-
-    // perform the change Keyboard_ctrl speed to pData->speed here
-    geometry_msgs::Point target_point;
-    geometry_msgs::Point offset = pData->offset;
     std::lock_guard<std::mutex> pose_guard(*(pose_mutex_));
-    target_point.x = current_pose.x + (offset.x * move_speed / update_rate);
-    target_point.y = current_pose.y + (offset.y * move_speed / update_rate);
-    target_point.z = current_pose.z + (offset.z * move_speed / update_rate);
+    geometry_msgs::Point target_point = current_pose.pose.position;
+    switch (pData->input) {
+        case MANEUVER::FORWARD:
+            target_point.x +=
+                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
+                (move_speed / update_rate);
+            target_point.y +=
+                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y) *
+                (move_speed / update_rate);
+            break;
+        case MANEUVER::BACKWARD:
+            target_point.x -=
+                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
+                (move_speed / update_rate);
+            target_point.y -=
+                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y) *
+                (move_speed / update_rate);
+            break;
+        case MANEUVER::LEFT:
+            target_point.x +=
+                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x +
+                         PI / 2.0) *
+                (move_speed / update_rate);
+            target_point.y +=
+                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y +
+                         PI / 2.0) *
+                (move_speed / update_rate);
+            break;
+        case MANEUVER::RIGHT:
+            target_point.x +=
+                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x -
+                         PI / 2.0) *
+                (move_speed / update_rate);
+            target_point.y +=
+                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y -
+                         PI / 2.0) *
+                (move_speed / update_rate);
+            break;
+        case MANEUVER::UP:
+            target_point.z += move_speed / update_rate;
+            break;
+        case MANEUVER::DOWN:
+            target_point.z -= move_speed / update_rate;
+            break;
+    }
+
     std::cout << "===Get target Point===" << std::endl;
     std::cout << "Current pose" << std::endl;
-    std::cout << "x: " << current_pose.x << ", y: " << current_pose.y << ", z: " << current_pose.z
-              << std::endl;
+    std::cout << "x: " << current_pose.pose.position.x << ", y: " << current_pose.pose.position.y
+              << ", z: " << current_pose.pose.position.z << std::endl;
     std::cout << "Target pose" << std::endl;
     std::cout << "x: " << target_point.x << ", y: " << target_point.y << ", z: " << target_point.z
               << std::endl;
 
     std::vector<geometry_msgs::Point> path =
-        Util::createPath(current_pose, target_point, path_density);
+        Util::createPath(current_pose.pose.position, target_point, path_density);
 
     pixhawk_fsm::Explore explore_service_handle;
     explore_service_handle.request.path = path;

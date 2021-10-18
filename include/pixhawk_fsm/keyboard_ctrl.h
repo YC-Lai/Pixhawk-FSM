@@ -1,11 +1,11 @@
 #ifndef _KEYBOARD_CTRL_H
 #define _KEYBOARD_CTRL_H
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <pixhawk_fsm/Explore.h>
 #include <pixhawk_fsm/Land.h>
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <pixhawk_fsm/TakeOff.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <ros/ros.h>
 
 #include <memory>
@@ -13,10 +13,25 @@
 
 #include "state_machine.h"
 
+#define PI (3.1415926)
+
+enum class MANEUVER {
+    IDLE,
+    TAKEOFF,
+    LAND,
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+    TURNLEFT,
+    TURNRIGHT
+};
+
 // structure to hold event data passed into state machine
-struct Keyboard_Data : public EventData {
-    geometry_msgs::Point offset;
-    geometry_msgs::Point point_of_interest;
+struct Keyboard_data : public EventData {
+    MANEUVER input;
 };
 
 // the Keyboard_ctrl state machine class
@@ -26,7 +41,7 @@ class Keyboard_ctrl : public StateMachine {
 
     // external events taken by this state machine
     void Land();
-    void Move(std::shared_ptr<Keyboard_Data>);
+    void Move(std::shared_ptr<Keyboard_data> pData);
 
    private:
     // ros module
@@ -46,7 +61,7 @@ class Keyboard_ctrl : public StateMachine {
     /**
      * @brief Current pose.
      */
-    geometry_msgs::Point current_pose;
+    geometry_msgs::PoseStamped current_pose;
 
     /**
      * @brief constant speed ardupilot parameter for the keyboard control.
@@ -67,20 +82,20 @@ class Keyboard_ctrl : public StateMachine {
 
     /**
      * @brief Grab the finished operation when it completes. This is just a service callback that
-     * pixhawk_fsm will call to. It's not mandatory to implement this service callback, the result of the
-     * callback does not affect the internal state of pixhawk_fsm, but in that case the client will of
-     * course not know when an operation completes. In other words, just leave this here to have a
-     * two-way communication :)
+     * pixhawk_fsm will call to. It's not mandatory to implement this service callback, the result
+     * of the callback does not affect the internal state of pixhawk_fsm, but in that case the
+     * client will of course not know when an operation completes. In other words, just leave this
+     * here to have a two-way communication :)
      *
      * @param request Holds the operation completed.
      * @param response Just an empty struct (not used, only required as a parameter for the ROS
      * service).
      *
-     * @return true as this service will always succeed, since the pixhawk_fsm server don't care if this
-     * service fails or not it's just a measure for the two way communication.
+     * @return true as this service will always succeed, since the pixhawk_fsm server don't care if
+     * this service fails or not it's just a measure for the two way communication.
      */
     bool OperationCompletionCallback(pixhawk_fsm::OperationCompletion::Request& request,
-                                          pixhawk_fsm::OperationCompletion::Response& response);
+                                     pixhawk_fsm::OperationCompletion::Response& response);
 
     /**
      * @brief Waits for @p timeout until we get connection with the services.
@@ -94,8 +109,8 @@ class Keyboard_ctrl : public StateMachine {
     // state machine state functions
     void ST_Idle(EventData*);
     void ST_Land(EventData*);
-    void ST_Takeoff(std::shared_ptr<Keyboard_Data>);
-    void ST_Move(std::shared_ptr<Keyboard_Data>);
+    void ST_Takeoff(std::shared_ptr<Keyboard_data>);
+    void ST_Move(std::shared_ptr<Keyboard_data>);
 
     // state map to define state function order
     BEGIN_STATE_MAP
