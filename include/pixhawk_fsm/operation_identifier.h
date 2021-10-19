@@ -21,6 +21,7 @@ enum class OperationIdentifier {
     HOLD,
     EXPLORE,
     TRAVEL,
+    KEYBOARD,
     LAND,
     UNDEFINED
 };

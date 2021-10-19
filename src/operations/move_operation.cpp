@@ -10,8 +10,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
 
-#include "pixhawk_fsm.h"
 #include "mavros_interface.h"
+#include "pixhawk_fsm.h"
 #include "util.h"
 
 MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
@@ -39,9 +39,13 @@ void MoveOperation::initialize() {
     current_setpoint_iterator = path.begin();
     setpoint.position = *current_setpoint_iterator;
 
-    double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
-    double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
-    setpoint.yaw = std::atan2(dy, dx);
+    if (identifier == OperationIdentifier::KEYBOARD) {
+        setpoint.yaw = Util::quaternion_to_euler_angle(getCurrentPose().pose.orientation).z;
+    } else {
+        double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
+        double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
+        setpoint.yaw = std::atan2(dy, dx);
+    }
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("MPC_XY_VEL_ALL", speed);
@@ -67,9 +71,13 @@ void MoveOperation::tick() {
 
             setpoint.position = *current_setpoint_iterator;
 
-            double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
-            double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
-            setpoint.yaw = std::atan2(dy, dx);
+            if (identifier == OperationIdentifier::KEYBOARD) {
+                setpoint.yaw = Util::quaternion_to_euler_angle(getCurrentPose().pose.orientation).z;
+            } else {
+                double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
+                double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
+                setpoint.yaw = std::atan2(dy, dx);
+            }
 
         } else {
             been_to_all_points = true;

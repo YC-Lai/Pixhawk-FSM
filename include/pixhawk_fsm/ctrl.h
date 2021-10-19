@@ -31,6 +31,7 @@ class Ctrl : public StateMachine {
     ros::ServiceServer operation_completion_server;
     ros::ServiceClient take_off;
     ros::ServiceClient travel;
+    ros::ServiceClient kb_travel;
     ros::ServiceClient explore;
     ros::ServiceClient land;
 

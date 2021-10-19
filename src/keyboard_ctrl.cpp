@@ -10,14 +10,16 @@
 // using namespace std;
 
 Keyboard_ctrl::Keyboard_ctrl(double height, double speed, int update_rate)
-    : Ctrl(height), move_speed(speed), update_rate(update_rate), path_density(2) {;}
+    : Ctrl(height), move_speed(speed), update_rate(update_rate), path_density(2) {}
 
 // changes the Keyboard_ctrl speed once the Keyboard_ctrl is moving
-void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_data> pData) {
+void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
+    auto Data = std::static_pointer_cast<Keyboard_data>(pData);
+
     ROS_INFO_STREAM("[Client]: Current state: MOVE");
     std::lock_guard<std::mutex> pose_guard(*(state_mutex_));
     geometry_msgs::Point target_point = current_pose.pose.position;
-    switch (pData->input) {
+    switch (Data->input) {
         case MANEUVER::FORWARD:
             target_point.x +=
                 std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
@@ -35,6 +37,7 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_data> pData) {
                 (move_speed / update_rate);
             break;
         case MANEUVER::LEFT:
+            std::cout << "start MANEUVER::LEFT" << std::endl;
             target_point.x +=
                 std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x +
                          PI / 2.0) *
@@ -73,11 +76,11 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<Keyboard_data> pData) {
     std::vector<geometry_msgs::Point> path =
         Util::createPath(current_pose.pose.position, target_point, path_density);
 
-    pixhawk_fsm::Travel travel_service_handle;
-    travel_service_handle.request.path = path;
-    if (travel.call(travel_service_handle)) {
-        if (!travel_service_handle.response.success) {
-            ROS_FATAL_STREAM(travel_service_handle.response.message);
+    pixhawk_fsm::Travel kb_travel_service_handle;
+    kb_travel_service_handle.request.path = path;
+    if (kb_travel.call(kb_travel_service_handle)) {
+        if (!kb_travel_service_handle.response.success) {
+            ROS_FATAL_STREAM(kb_travel_service_handle.response.message);
         } else {
             is_executing_operation = true;
         }

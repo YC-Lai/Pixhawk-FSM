@@ -75,7 +75,7 @@ class MoveOperation : public Operation {
      */
     bool hasFinishedExecution() const override;
 
-    /**
+    /** 
      * @brief Checks where the drone is at a given point and updates the #current_setpoint_iterator if
      *        the drone has reached a setpoint.
      */

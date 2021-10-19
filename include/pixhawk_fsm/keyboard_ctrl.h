@@ -2,10 +2,10 @@
 #define _KEYBOARD_CTRL_H
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <pixhawk_fsm/Travel.h>
 #include <pixhawk_fsm/Land.h>
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <pixhawk_fsm/TakeOff.h>
+#include <pixhawk_fsm/Travel.h>
 #include <ros/ros.h>
 
 #include <memory>
@@ -47,6 +47,6 @@ class Keyboard_ctrl : public Ctrl {
     int update_rate;
     double path_density;
 
-    void ST_Move(std::shared_ptr<Keyboard_data>);
+    void ST_Move(std::shared_ptr<EventData>) override;
 };
 #endif  // _KEYBOARD_CTRL_H

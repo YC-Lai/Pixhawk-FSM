@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+
 #include <memory>
 
 #include "keyboard_ctrl.h"
@@ -11,7 +12,7 @@ int main(int argc, char** argv) {
     double takeoff_height = 1.5f;
     double speed = 10;
     int update_rate = 5;
-    
+
     Keyboard_ctrl Keyboard_ctrl(takeoff_height, speed, update_rate);
     auto data = std::make_shared<Keyboard_data>();
 

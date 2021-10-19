@@ -22,6 +22,8 @@ std::string getStringFromOperationIdentifier(const OperationIdentifier& operatio
             return "EXPLORE";
         case OperationIdentifier::TRAVEL:
             return "TRAVEL";
+        case OperationIdentifier::KEYBOARD:
+            return "KEYBOARD";
         case OperationIdentifier::LAND:
             return "LAND";
         case OperationIdentifier::UNDEFINED:

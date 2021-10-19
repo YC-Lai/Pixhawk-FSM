@@ -204,7 +204,8 @@ class Pixhawk_fsm : public StateMachine {
     /**
      * @brief The servers which advertise the operations.
      */
-    ros::ServiceServer take_off_server, travel_server, explore_server, land_server;
+    ros::ServiceServer take_off_server, travel_server, kb_travel_server, explore_server,
+        land_server;
 
     /**
      * @brief Used to give completion calls of operations.
@@ -232,6 +233,16 @@ class Pixhawk_fsm : public StateMachine {
     bool travel(pixhawk_fsm::Travel::Request& request, pixhawk_fsm::Travel::Response& response);
 
     /**
+     * @brief Service handler for the kb_travel service.
+     *
+     * @param request The kb_travel request.
+     * @param response The kb_travel response.
+     *
+     * @return true When the service call has been handled.
+     */
+    bool kb_travel(pixhawk_fsm::Travel::Request& request, pixhawk_fsm::Travel::Response& response);
+
+    /**
      * @brief Service handler for the explore service.
      *
      * @param request The explore request.
@@ -240,7 +251,6 @@ class Pixhawk_fsm : public StateMachine {
      * @return true When the service call has been handled.
      */
     bool explore(pixhawk_fsm::Explore::Request& request, pixhawk_fsm::Explore::Response& response);
-
 
     /**
      * @brief Service handler for the land service.

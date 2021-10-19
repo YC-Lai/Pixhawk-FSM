@@ -6,6 +6,7 @@
 
 #include "explore_operation.h"
 #include "hold_operation.h"
+#include "kbCtrl_operation.h"
 #include "land_operation.h"
 #include "mavros_interface.h"
 #include "take_off_operation.h"
@@ -35,6 +36,8 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
     take_off_server =
         node_handle.advertiseService("pixhawk_fsm/take_off", &Pixhawk_fsm::take_off, this);
     travel_server = node_handle.advertiseService("pixhawk_fsm/travel", &Pixhawk_fsm::travel, this);
+    kb_travel_server =
+        node_handle.advertiseService("pixhawk_fsm/kb_travel", &Pixhawk_fsm::kb_travel, this);
     explore_server =
         node_handle.advertiseService("pixhawk_fsm/explore", &Pixhawk_fsm::explore, this);
     land_server = node_handle.advertiseService("pixhawk_fsm/land", &Pixhawk_fsm::land, this);
@@ -67,6 +70,17 @@ bool Pixhawk_fsm::travel(pixhawk_fsm::Travel::Request& request,
     setpoint->path = request.path;
     setpoint->target_operation = "TRAVEL";
     Response attempt_response = attemptToCreateOperation(OperationIdentifier::TRAVEL, setpoint);
+    response.message = attempt_response.message;
+    response.success = attempt_response.success;
+    return true;
+}
+
+bool Pixhawk_fsm::kb_travel(pixhawk_fsm::Travel::Request& request,
+                            pixhawk_fsm::Travel::Response& response) {
+    auto setpoint = std::make_shared<Setpoint_Data>();
+    setpoint->path = request.path;
+    setpoint->target_operation = "KEYBOARD";
+    Response attempt_response = attemptToCreateOperation(OperationIdentifier::KEYBOARD, setpoint);
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;
@@ -199,6 +213,9 @@ void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {
         operation_execution_queue = {
             std::make_shared<ExploreOperation>(setpoint->path, setpoint->point_of_interest),
             std::make_shared<HoldOperation>()};
+    } else if (setpoint->target_operation == "KEYBOARD") {
+        operation_execution_queue = {std::make_shared<KbCtrlOperation>(setpoint->path),
+                                     std::make_shared<HoldOperation>()};
     }
 
     got_new_operation = true;
