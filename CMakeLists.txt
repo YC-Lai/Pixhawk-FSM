@@ -28,6 +28,7 @@ add_service_files(
         Land.srv
         TakeOff.srv
         ObstacleAvoidanceService.srv
+        Travel.srv
 )
 
 generate_messages(
@@ -56,9 +57,12 @@ file(GLOB Operations_SRC "src/operations/*.cpp")
 
 add_executable(pixhawk_fsm      src/nodes/main.cpp      ${SRC} ${Operations_SRC})
 add_executable(keyboard_client  src/client/keyboard_client.cpp        ${SRC} ${Operations_SRC})
+add_executable(path_client  src/client/path_client.cpp        ${SRC} ${Operations_SRC})
 
 add_dependencies(pixhawk_fsm    ${${PROJECT_NAME}_EXPORTED_TARGETS}     ${catkin_EXPORTED_TARGETS})
 add_dependencies(keyboard_client        ${${PROJECT_NAME}_EXPORTED_TARGETS}     ${catkin_EXPORTED_TARGETS})
+add_dependencies(path_client        ${${PROJECT_NAME}_EXPORTED_TARGETS}     ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(pixhawk_fsm       ${catkin_LIBRARIES})
 target_link_libraries(keyboard_client   ${catkin_LIBRARIES})
+target_link_libraries(path_client   ${catkin_LIBRARIES})

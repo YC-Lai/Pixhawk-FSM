@@ -9,6 +9,7 @@
 #include "land_operation.h"
 #include "mavros_interface.h"
 #include "take_off_operation.h"
+#include "travel_operation.h"
 
 /******************************************************************************************************
  *                                          Singleton *
@@ -33,6 +34,7 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
     : StateMachine(ST_MAX_STATES), configuration(configuration) {
     take_off_server =
         node_handle.advertiseService("pixhawk_fsm/take_off", &Pixhawk_fsm::take_off, this);
+    travel_server = node_handle.advertiseService("pixhawk_fsm/travel", &Pixhawk_fsm::travel, this);
     explore_server =
         node_handle.advertiseService("pixhawk_fsm/explore", &Pixhawk_fsm::explore, this);
     land_server = node_handle.advertiseService("pixhawk_fsm/land", &Pixhawk_fsm::land, this);
@@ -51,8 +53,20 @@ bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
     auto setpoint = std::make_shared<Setpoint_Data>();
     setpoint->point_of_interest.x = setpoint->point_of_interest.y = 0;
     setpoint->point_of_interest.z = request.height;
+    setpoint->target_operation = "TAKE_OFF";
 
     Response attempt_response = attemptToCreateOperation(OperationIdentifier::TAKE_OFF, setpoint);
+    response.message = attempt_response.message;
+    response.success = attempt_response.success;
+    return true;
+}
+
+bool Pixhawk_fsm::travel(pixhawk_fsm::Travel::Request& request,
+                         pixhawk_fsm::Travel::Response& response) {
+    auto setpoint = std::make_shared<Setpoint_Data>();
+    setpoint->path = request.path;
+    setpoint->target_operation = "TRAVEL";
+    Response attempt_response = attemptToCreateOperation(OperationIdentifier::TRAVEL, setpoint);
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;
@@ -61,9 +75,10 @@ bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
 bool Pixhawk_fsm::explore(pixhawk_fsm::Explore::Request& request,
                           pixhawk_fsm::Explore::Response& response) {
     auto setpoint = std::make_shared<Setpoint_Data>();
-    setpoint->point_of_interest = request.point_of_interest;
     setpoint->path = request.path;
-    Response attempt_response = attemptToCreateOperation(OperationIdentifier::EXPLORE, setpoint);
+    setpoint->point_of_interest = request.point_of_interest;
+    setpoint->target_operation = "EXPLORE";
+    Response attempt_response = attemptToCreateOperation(OperationIdentifier::TRAVEL, setpoint);
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;
@@ -138,7 +153,7 @@ std::shared_ptr<Operation> Pixhawk_fsm::performOperationTransition(
  *                                          State Machine *
  ******************************************************************************************************/
 
-// Land drone external event
+// Land external event
 void Pixhawk_fsm::Land(void) {
     BEGIN_TRANSITION_MAP                     // - Current State -
     TRANSITION_MAP_ENTRY(EVENT_IGNORED)      // ST_Idle
@@ -148,7 +163,7 @@ void Pixhawk_fsm::Land(void) {
         END_TRANSITION_MAP(NULL)
 }
 
-// move drone external event
+// Takeoff & Move external event
 void Pixhawk_fsm::Move(std::shared_ptr<Setpoint_Data> pData) {
     BEGIN_TRANSITION_MAP                     // - Current State -
     TRANSITION_MAP_ENTRY(ST_TAKEOFF)         // ST_Idle
@@ -167,6 +182,7 @@ void Pixhawk_fsm::ST_Land(EventData* pData) {
     operation_execution_queue = {std::make_shared<LandOperation>(),
                                  std::make_shared<LandOperation>()};
     got_new_operation = true;
+    InternalEvent(ST_IDLE);
 }
 
 void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
@@ -176,9 +192,15 @@ void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
 }
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {
-    operation_execution_queue = {
-        std::make_shared<ExploreOperation>(setpoint->path, setpoint->point_of_interest),
-        std::make_shared<HoldOperation>()};
+    if (setpoint->target_operation == "TRAVEL") {
+        operation_execution_queue = {std::make_shared<TravelOperation>(setpoint->path),
+                                     std::make_shared<HoldOperation>()};
+    } else if (setpoint->target_operation == "EXPLORE") {
+        operation_execution_queue = {
+            std::make_shared<ExploreOperation>(setpoint->path, setpoint->point_of_interest),
+            std::make_shared<HoldOperation>()};
+    }
+
     got_new_operation = true;
 }
 

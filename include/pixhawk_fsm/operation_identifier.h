@@ -20,6 +20,7 @@ enum class OperationIdentifier {
     TAKE_OFF,
     HOLD,
     EXPLORE,
+    TRAVEL,
     LAND,
     UNDEFINED
 };

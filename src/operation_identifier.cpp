@@ -20,6 +20,8 @@ std::string getStringFromOperationIdentifier(const OperationIdentifier& operatio
             return "HOLD";
         case OperationIdentifier::EXPLORE:
             return "EXPLORE";
+        case OperationIdentifier::TRAVEL:
+            return "TRAVEL";
         case OperationIdentifier::LAND:
             return "LAND";
         case OperationIdentifier::UNDEFINED:

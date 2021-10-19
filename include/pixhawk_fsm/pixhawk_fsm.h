@@ -6,6 +6,7 @@
 #include <pixhawk_fsm/Land.h>
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <pixhawk_fsm/TakeOff.h>
+#include <pixhawk_fsm/Travel.h>
 #include <ros/ros.h>
 
 #include <map>
@@ -20,6 +21,7 @@
 struct Setpoint_Data : public EventData {
     geometry_msgs::Point point_of_interest;
     std::vector<geometry_msgs::Point> path;
+    std::string target_operation;
 };
 
 /**
@@ -202,7 +204,7 @@ class Pixhawk_fsm : public StateMachine {
     /**
      * @brief The servers which advertise the operations.
      */
-    ros::ServiceServer take_off_server, explore_server, land_server;
+    ros::ServiceServer take_off_server, travel_server, explore_server, land_server;
 
     /**
      * @brief Used to give completion calls of operations.
@@ -220,6 +222,16 @@ class Pixhawk_fsm : public StateMachine {
     bool take_off(pixhawk_fsm::TakeOff::Request& request, pixhawk_fsm::TakeOff::Response& response);
 
     /**
+     * @brief Service handler for the travel service.
+     *
+     * @param request The travel request.
+     * @param response The travel response.
+     *
+     * @return true When the service call has been handled.
+     */
+    bool travel(pixhawk_fsm::Travel::Request& request, pixhawk_fsm::Travel::Response& response);
+
+    /**
      * @brief Service handler for the explore service.
      *
      * @param request The explore request.
@@ -228,6 +240,7 @@ class Pixhawk_fsm : public StateMachine {
      * @return true When the service call has been handled.
      */
     bool explore(pixhawk_fsm::Explore::Request& request, pixhawk_fsm::Explore::Response& response);
+
 
     /**
      * @brief Service handler for the land service.
@@ -283,7 +296,8 @@ class Pixhawk_fsm : public StateMachine {
     void ST_Idle(EventData*);
     void ST_Land(EventData*);
     void ST_Takeoff(std::shared_ptr<Setpoint_Data>);
-    void ST_Move(std::shared_ptr<Setpoint_Data>);;
+    void ST_Move(std::shared_ptr<Setpoint_Data>);
+    ;
 
     // state map to define state function order
     BEGIN_STATE_MAP
