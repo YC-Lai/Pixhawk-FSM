@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf2_geometry_msgs
         tf2_ros
         message_generation
+        mav_msgs
 )
 
 add_message_files(
