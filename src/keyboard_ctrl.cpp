@@ -10,13 +10,14 @@
 // using namespace std;
 
 Keyboard_ctrl::Keyboard_ctrl(double height, double speed, int update_rate)
-    : Ctrl(height), move_speed(speed), update_rate(update_rate), path_density(2) {}
+    : Ctrl(height), move_speed(speed), update_rate(update_rate), path_density(4) {}
 
 // changes the Keyboard_ctrl speed once the Keyboard_ctrl is moving
 void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
     auto Data = std::static_pointer_cast<Keyboard_data>(pData);
 
-    ROS_INFO_STREAM("[Client]: Current state: MOVE");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                      << "Current state: MOVE");
     std::lock_guard<std::mutex> pose_guard(*(state_mutex_));
     geometry_msgs::Point target_point = current_pose.pose.position;
     switch (Data->input) {
@@ -37,7 +38,6 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
                 (move_speed / update_rate);
             break;
         case MANEUVER::LEFT:
-            std::cout << "start MANEUVER::LEFT" << std::endl;
             target_point.x +=
                 std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x +
                          PI / 2.0) *

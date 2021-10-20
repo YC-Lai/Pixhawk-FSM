@@ -189,35 +189,33 @@ void Pixhawk_fsm::Move(std::shared_ptr<Setpoint_Data> pData) {
 
 // state machine sits here when pixhawk is not running
 void Pixhawk_fsm::ST_Idle(EventData* pData) {
-    ROS_INFO_STREAM("[Keyboard_client]: Current state: IDLE");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                      << "Current state: IDLE");
 }
 
 void Pixhawk_fsm::ST_Land(EventData* pData) {
-    operation_execution_queue = {std::make_shared<LandOperation>(),
-                                 std::make_shared<LandOperation>()};
+    operation_execution_queue.emplace_back(std::make_shared<LandOperation>());
     got_new_operation = true;
     InternalEvent(ST_IDLE);
 }
 
 void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
-    operation_execution_queue = {std::make_shared<TakeOffOperation>(setpoint->point_of_interest.z),
-                                 std::make_shared<HoldOperation>()};
+    operation_execution_queue.emplace_back(
+        std::make_shared<TakeOffOperation>(setpoint->point_of_interest.z));
+    operation_execution_queue.emplace_back(std::make_shared<HoldOperation>());
     got_new_operation = true;
 }
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {
     if (setpoint->target_operation == "TRAVEL") {
-        operation_execution_queue = {std::make_shared<TravelOperation>(setpoint->path),
-                                     std::make_shared<HoldOperation>()};
+        operation_execution_queue.emplace_back(std::make_shared<TravelOperation>(setpoint->path));
     } else if (setpoint->target_operation == "EXPLORE") {
-        operation_execution_queue = {
-            std::make_shared<ExploreOperation>(setpoint->path, setpoint->point_of_interest),
-            std::make_shared<HoldOperation>()};
+        operation_execution_queue.emplace_back(
+            std::make_shared<ExploreOperation>(setpoint->path, setpoint->point_of_interest));
     } else if (setpoint->target_operation == "KEYBOARD") {
-        operation_execution_queue = {std::make_shared<KbCtrlOperation>(setpoint->path),
-                                     std::make_shared<HoldOperation>()};
+        operation_execution_queue.emplace_back(std::make_shared<KbCtrlOperation>(setpoint->path));
     }
-
+    operation_execution_queue.emplace_back(std::make_shared<HoldOperation>());
     got_new_operation = true;
 }
 

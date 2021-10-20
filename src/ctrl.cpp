@@ -32,6 +32,9 @@ bool Ctrl::OperationCompletionCallback(pixhawk_fsm::OperationCompletion::Request
                                        pixhawk_fsm::OperationCompletion::Response& response) {
     finished_operation = request.operation;
     is_executing_operation = false;
+    ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                    << ": "
+                    << "Current operation: " << finished_operation);
 
     return true;
 }
@@ -83,18 +86,23 @@ void Ctrl::Move(std::shared_ptr<EventData> pData) {
 }
 
 // state machine sits here when Ctrl is not running
-void Ctrl::ST_Idle(EventData* pData) { ROS_INFO_STREAM("[Client]: Current state: IDLE"); }
+void Ctrl::ST_Idle(EventData* pData) {
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                      << "Current state: IDLE");
+}
 
 // stop the Ctrl
 void Ctrl::ST_Land(EventData* pData) {
-    ROS_INFO_STREAM("[Client]: Current state: LAND");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                      << "Current state: LAND");
 
     pixhawk_fsm::Land land_service_handle;
     if (land.call(land_service_handle)) {
         if (!land_service_handle.response.success) {
             ROS_FATAL_STREAM(land_service_handle.response.message);
         } else {
-            ROS_INFO_STREAM("[Client]: LAND success");
+            ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                              << "LAND success!");
             is_executing_operation = true;
         }
     } else {
@@ -108,7 +116,8 @@ void Ctrl::ST_Land(EventData* pData) {
 
 // start the Ctrl going
 void Ctrl::ST_Takeoff(std::shared_ptr<EventData> pData) {
-    ROS_INFO_STREAM("[Client]: Current state: TAKEOFF");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                      << "Current state: TAKEOFF");
 
     pixhawk_fsm::TakeOff take_off_service_handle;
     take_off_service_handle.request.height = takeoff_height;
@@ -122,7 +131,3 @@ void Ctrl::ST_Takeoff(std::shared_ptr<EventData> pData) {
         ROS_FATAL("Failed to call take off service.");
     }
 }
-
-// void Ctrl::ST_Move(std::shared_ptr<EventData> pData) {
-//     std::cout << "need to be override" << std::endl;
-// }

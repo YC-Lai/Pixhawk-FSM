@@ -16,7 +16,7 @@
     <arg name="sdf" default="$(find e2es)/gazebo/models/$(arg my_vehicle)/$(arg my_vehicle).sdf"/>
 
 
-<!--    <arg name="my_vehicle" default="iris"/>
+    <!--    <arg name="my_vehicle" default="iris"/>
     <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty.world"/>
     <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg my_vehicle)/$(arg my_vehicle).sdf"/>-->
 
@@ -34,9 +34,8 @@
     <arg name="interactive" default="true"/>
     <!-- PX4 SITL -->
     <arg unless="$(arg interactive)" name="px4_command_arg1" value="-d"/>
-    <arg     if="$(arg interactive)" name="px4_command_arg1" value=""/>
-    <node name="sitl" pkg="px4" type="px4" output="screen"
-        args="$(find px4)/ROMFS/px4fmu_common -s etc/init.d-posix/rcS $(arg px4_command_arg1)" required="true"/>
+    <arg if="$(arg interactive)" name="px4_command_arg1" value=""/>
+    <node name="sitl" pkg="px4" type="px4" output="screen" args="$(find px4)/ROMFS/px4fmu_common -s etc/init.d-posix/rcS $(arg px4_command_arg1)" required="true"/>
 
     <!-- Gazebo sim -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -54,7 +53,7 @@
     <!-- MAVROS -->
     <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
     <arg name="respawn_mavros" default="false"/>
-    <include file="$(find pixhawk_fsm)/launch/mavros.launch">
+    <include file="$(find pixhawk_fsm)/launch/base/mavros.launch">
         <!-- GCS link is provided by SITL -->
         <arg name="gcs_url" value=""/>
         <arg name="fcu_url" value="$(arg fcu_url)"/>

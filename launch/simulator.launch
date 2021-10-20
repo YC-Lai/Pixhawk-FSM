@@ -3,7 +3,7 @@
 	<arg name="launch_rviz"         default="false"/>
     <arg name="use_perception"     default="false"/>
 
-    <include file="$(find pixhawk_fsm)/launch/base.launch">
+    <include file="$(find pixhawk_fsm)/launch/base/base.launch">
         <arg name="fcu_url"                           value="udp://:14550@:14551"/>
         <arg name="should_auto_arm"                   value="true"/>
         <arg name="should_auto_offboard"              value="true"/>

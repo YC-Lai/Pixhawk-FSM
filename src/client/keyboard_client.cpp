@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
 
     double takeoff_height = 1.5f;
-    double speed = 10;
+    double speed = 5;
     int update_rate = 5;
 
     Keyboard_ctrl Keyboard_ctrl(takeoff_height, speed, update_rate);
