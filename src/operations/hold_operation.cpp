@@ -9,7 +9,6 @@
 HoldOperation::HoldOperation() : Operation(OperationIdentifier::HOLD, true, false) {}
 
 bool HoldOperation::hasFinishedExecution() const {
-    std::cout << "Check hold mode has finished" << std::endl;
     const float threshold = Pixhawk_fsm::getInstance().configuration.velocity_completion_threshold;
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < threshold &&
                                std::abs(getCurrentTwist().twist.linear.y) < threshold &&

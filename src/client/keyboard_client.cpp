@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "pixhawk_fsm_client");
     ros::NodeHandle node_handle;
 
-    double takeoff_height = 1.5f;
+    double takeoff_height = 1.0f;
     double speed = 5;
     int update_rate = 5;
 
