@@ -68,9 +68,9 @@ void TakeOffOperation::initialize() {
         rate.sleep();
     }
 
-    mavros_interface.setParam("MPC_TKO_SPEED", 0.9);
+    mavros_interface.setParam("MPC_TKO_SPEED", 1.1);
     ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                    << ": Set climb rate to: " << 90. / 100. << " m/s.");
+                    << ": Set climb rate to: " << 110. / 100. << " m/s.");
 
     // send take off command
     setpoint.position.x = getCurrentPose().pose.position.x;

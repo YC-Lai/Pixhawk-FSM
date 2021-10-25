@@ -9,8 +9,5 @@ plugin_blacklist:
 - wheel_odometry
 
 
-plugin_whitelist:
+plugin_whitelist: []
 #- 'sys_*'
-- setpoint_raw
-- vision_pose_estimate
-- vision_speed_estimate

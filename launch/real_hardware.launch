@@ -41,14 +41,23 @@
     </node>
 
     <!-- MAVROS -->
-    <arg name="fcu_url" default="serial:///dev/ttyACM0:921600"/>
+    <arg name="fcu_url" default="serial:///dev/ttyUSB0:921600"/>
     <arg name="gcs_url" default="udp://:14550@10.42.0.196:14550" />
     <arg name="respawn_mavros" default="false"/>
     <include file="$(find pixhawk_fsm)/launch/base/mavros.launch">
         <arg name="fcu_url" value="$(arg fcu_url)"/>
         <arg name="gcs_url" value="$(arg gcs_url)" />
- 	<arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+        <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
     </include>
 
+    <!-- Pixhawk fsm -->
+    <include file="$(find pixhawk_fsm)/launch/base/base.launch">
+        <arg name="fcu_url" value="$(arg fcu_url)"/>
+        <arg name="should_auto_arm" value="true"/>
+        <arg name="should_auto_offboard" value="true"/>
+        <arg name="launch_rviz" value="false"/>
+        <arg name="ekf" value="false"/>
+        <arg name="use_perception" value="false"/>
+    </include>
 </launch>
 
