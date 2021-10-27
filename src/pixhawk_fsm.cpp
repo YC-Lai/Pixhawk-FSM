@@ -207,6 +207,7 @@ void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
 }
 
 void Pixhawk_fsm::ST_Move(std::shared_ptr<Setpoint_Data> setpoint) {
+    std::lock_guard<std::mutex> operation_ptr_guard(*(operation_ptr_mutex));
     if (setpoint->target_operation == "TRAVEL") {
         operation_execution_queue.emplace_back(std::make_shared<TravelOperation>(setpoint->path));
     } else if (setpoint->target_operation == "EXPLORE") {
