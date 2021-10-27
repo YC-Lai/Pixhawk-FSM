@@ -72,6 +72,7 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
     std::cout << "Target pose" << std::endl;
     std::cout << "x: " << target_point.x << ", y: " << target_point.y << ", z: " << target_point.z
               << std::endl;
+    std::cout << "======================" << std::endl;
 
     std::vector<geometry_msgs::Point> path =
         Util::createPath(current_pose.pose.position, target_point, path_density);

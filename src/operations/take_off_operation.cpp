@@ -40,11 +40,6 @@ void TakeOffOperation::initialize() {
 
     ros::Rate rate(5);
 
-    // // Disables RC checks
-    // mavros_interface.setParam("COM_RC_IN_MODE", false);
-    // mavros_interface.setParam("NAV_RCL_ACT", 0);
-    // ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Disables RC checks");
-
     // Set minimum take-off altitude
     mavros_interface.setParam("MIS_TAKEOFF_ALT", height_setpoint);
     ROS_INFO_STREAM(ros::this_node::getName().c_str()

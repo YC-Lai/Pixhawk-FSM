@@ -72,7 +72,7 @@ void MoveOperation::tick() {
             setpoint.position = *current_setpoint_iterator;
 
             if (identifier == OperationIdentifier::KEYBOARD) {
-                setpoint.yaw = Util::quaternion_to_euler_angle(getCurrentPose().pose.orientation).z;
+                setpoint.yaw = getCurrentYaw();
             } else {
                 double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
                 double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;

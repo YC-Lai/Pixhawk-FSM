@@ -63,6 +63,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
     // change modes within Pixhawk
     // Is this necessary with Pixhawk? -Erlend
     mavros_msgs::PositionTarget setpoint;
+    setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
     setpoint.type_mask = TypeMask::IDLE;
     setpoint.header.frame_id = "map";
 
@@ -119,6 +120,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     mavros_msgs::PositionTarget setpoint;
+    setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
     setpoint.header.frame_id = "map";
     setpoint.type_mask = TypeMask::IDLE;
 
@@ -155,7 +157,8 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     // Is this necessary with Pixhawk? -Erlend
     setpoint.header.frame_id = "map";
     setpoint.type_mask = TypeMask::IDLE;
-    setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;;
+    setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+    ;
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
         setpoint.header.stamp = ros::Time::now();
@@ -179,7 +182,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     srv_takeoff.request.min_pitch = 0.0;
     srv_takeoff.request.latitude = NAN;
     srv_takeoff.request.longitude = NAN;
-    srv_takeoff.request.yaw = setpoint.yaw;
+    srv_takeoff.request.yaw = NAN;
 
     while (!srv_takeoff.response.success) {
         ros::Duration(.1).sleep();
