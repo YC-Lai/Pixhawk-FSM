@@ -10,82 +10,89 @@
 // using namespace std;
 
 Keyboard_ctrl::Keyboard_ctrl(double height, double speed, int update_rate)
-    : Ctrl(height), move_speed(speed), update_rate(update_rate), path_density(4) {}
+    : Ctrl(height), move_speed(speed), update_rate(update_rate), path_density(2) {}
 
 // changes the Keyboard_ctrl speed once the Keyboard_ctrl is moving
 void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
-    auto Data = std::static_pointer_cast<Keyboard_data>(pData);
+    if (!is_executing_operation) {
+        auto Data = std::static_pointer_cast<Keyboard_data>(pData);
 
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
-                                                      << "Current state: MOVE");
-    std::lock_guard<std::mutex> pose_guard(*(state_mutex_));
-    geometry_msgs::Point target_point = current_pose.pose.position;
-    switch (Data->input) {
-        case MANEUVER::FORWARD:
-            target_point.x +=
-                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
-                (move_speed / update_rate);
-            target_point.y +=
-                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y) *
-                (move_speed / update_rate);
-            break;
-        case MANEUVER::BACKWARD:
-            target_point.x -=
-                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
-                (move_speed / update_rate);
-            target_point.y -=
-                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y) *
-                (move_speed / update_rate);
-            break;
-        case MANEUVER::LEFT:
-            target_point.x +=
-                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x +
-                         PI / 2.0) *
-                (move_speed / update_rate);
-            target_point.y +=
-                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y +
-                         PI / 2.0) *
-                (move_speed / update_rate);
-            break;
-        case MANEUVER::RIGHT:
-            target_point.x +=
-                std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x -
-                         PI / 2.0) *
-                (move_speed / update_rate);
-            target_point.y +=
-                std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y -
-                         PI / 2.0) *
-                (move_speed / update_rate);
-            break;
-        case MANEUVER::UP:
-            target_point.z += move_speed / update_rate;
-            break;
-        case MANEUVER::DOWN:
-            target_point.z -= move_speed / update_rate;
-            break;
-    }
-
-    std::cout << "===Get target Point===" << std::endl;
-    std::cout << "Current pose" << std::endl;
-    std::cout << "x: " << current_pose.pose.position.x << ", y: " << current_pose.pose.position.y
-              << ", z: " << current_pose.pose.position.z << std::endl;
-    std::cout << "Target pose" << std::endl;
-    std::cout << "x: " << target_point.x << ", y: " << target_point.y << ", z: " << target_point.z
-              << std::endl;
-    std::cout << "======================" << std::endl;
-
-    std::vector<geometry_msgs::Point> path =
-        Util::createPath(current_pose.pose.position, target_point, path_density);
-
-    pixhawk_fsm::Travel kb_travel_service_handle;
-    kb_travel_service_handle.request.path = path;
-    if (kb_travel.call(kb_travel_service_handle)) {
-        if (!kb_travel_service_handle.response.success) {
-            ROS_FATAL_STREAM(kb_travel_service_handle.response.message);
-        } else {
-            is_executing_operation = true;
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                          << "Current state: MOVE");
+        std::lock_guard<std::mutex> pose_guard(*(state_mutex_));
+        geometry_msgs::Point target_point = current_pose.pose.position;
+        switch (Data->input) {
+            case MANEUVER::FORWARD:
+                target_point.x +=
+                    std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
+                    (move_speed / update_rate);
+                target_point.y +=
+                    std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y) *
+                    (move_speed / update_rate);
+                break;
+            case MANEUVER::BACKWARD:
+                target_point.x -=
+                    std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x) *
+                    (move_speed / update_rate);
+                target_point.y -=
+                    std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y) *
+                    (move_speed / update_rate);
+                break;
+            case MANEUVER::LEFT:
+                target_point.x +=
+                    std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x +
+                             PI / 2.0) *
+                    (move_speed / update_rate);
+                target_point.y +=
+                    std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y +
+                             PI / 2.0) *
+                    (move_speed / update_rate);
+                break;
+            case MANEUVER::RIGHT:
+                target_point.x +=
+                    std::cos(Util::quaternion_to_euler_angle(current_pose.pose.orientation).x -
+                             PI / 2.0) *
+                    (move_speed / update_rate);
+                target_point.y +=
+                    std::sin(Util::quaternion_to_euler_angle(current_pose.pose.orientation).y -
+                             PI / 2.0) *
+                    (move_speed / update_rate);
+                break;
+            case MANEUVER::UP:
+                target_point.z += move_speed / update_rate;
+                break;
+            case MANEUVER::DOWN:
+                target_point.z -= move_speed / update_rate;
+                break;
         }
-    } else {
-        ROS_FATAL("Failed to call travel service.");
+
+        std::cout << "===Get target Point===" << std::endl;
+        std::cout << "Current pose" << std::endl;
+        std::cout << "x: " << current_pose.pose.position.x
+                  << ", y: " << current_pose.pose.position.y
+                  << ", z: " << current_pose.pose.position.z << std::endl;
+        std::cout << "Target pose" << std::endl;
+        std::cout << "x: " << target_point.x << ", y: " << target_point.y
+                  << ", z: " << target_point.z << std::endl;
+        std::cout << "======================" << std::endl;
+
+        // std::vector<geometry_msgs::Point> path =
+        //     Util::createPath(current_pose.pose.position, target_point, path_density);
+        // path.emplace_back(target_point);
+        // for (geometry_msgs::Point i : path) {
+        //     std::cout << "x: " << i.x << ", y: " << i.y << ", z: " << i.z << std::endl;
+        // }
+
+        pixhawk_fsm::Travel kb_travel_service_handle;
+        kb_travel_service_handle.request.path = {target_point};
+        if (kb_travel.call(kb_travel_service_handle)) {
+            if (!kb_travel_service_handle.response.success) {
+                ROS_FATAL_STREAM(kb_travel_service_handle.response.message);
+            } else {
+                is_executing_operation = true;
+            }
+        } else {
+            ROS_FATAL("Failed to call travel service.");
+        }
     }
 }
