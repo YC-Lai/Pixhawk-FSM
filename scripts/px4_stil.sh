@@ -15,7 +15,6 @@ export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:~/catkin_ws/devel/lib
 echo $GAZEBO_RESOURCE_PATH
 echo $GAZEBO_MODEL_PATH
 echo $GAZEBO_PLUGIN_PATH
+# roslaunch pixhawk_fsm rviz.launch &
+# sleep 2
 roslaunch pixhawk_fsm px4_stil.launch
-roslaunch e2es flvis.launch
-roslaunch e2es glmapping.launch
-#roslaunch local_planner local_planner_stereo.launch

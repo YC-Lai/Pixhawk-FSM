@@ -7,14 +7,17 @@ Trajectory_ctrl::Trajectory_ctrl(double height) : Ctrl(height) {
 
 void Trajectory_ctrl::markerCallback(const trajectory_msgs::MultiDOFJointTrajectory& msg) {
     std::lock_guard<std::mutex> pose_guard(*(state_mutex_));
+    std::cout << "get path" << std::endl;
     eigenTrajectoryPointDequeFromMsg(msg, &path);
 }
 
 void Trajectory_ctrl::ST_Move(std::shared_ptr<EventData>) {
-    ROS_INFO_STREAM("[Client]: Current state: MOVE");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
+                                                      << "Current state: MOVE");
     std::vector<geometry_msgs::Point> publish_path;
     while (!path.empty()) {
         mav_msgs::EigenTrajectoryPoint waypoint = path.front();
+        std::cout << "add point" << std::endl;
         path.pop_front();
 
         geometry_msgs::Point publish_point;

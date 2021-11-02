@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     double takeoff_height = 1.5f;
 
     Trajectory_ctrl trajectory_ctrl(takeoff_height);
-    auto data = std::make_shared<EventData>();;
+    auto data = std::make_shared<EventData>();
 
     ros::Rate rate(update_rate);
 

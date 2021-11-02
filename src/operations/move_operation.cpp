@@ -71,6 +71,10 @@ void MoveOperation::tick() {
 
             setpoint.position = *current_setpoint_iterator;
 
+            std::cout << "===Update Setpoint Point===" << std::endl;
+            std::cout << "x: " << setpoint.position.x << ", y: " << setpoint.position.y
+                      << ", z: " << setpoint.position.z << std::endl;
+
             if (identifier == OperationIdentifier::KEYBOARD) {
                 setpoint.yaw = getCurrentYaw();
             } else {

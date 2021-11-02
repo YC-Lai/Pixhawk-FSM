@@ -1,0 +1,6 @@
+<launch>
+
+    <include file="$(find e2es)/launch/flvis.launch" />
+    <include file="$(find e2es)/launch/glmapping.launch" />
+
+</launch>
