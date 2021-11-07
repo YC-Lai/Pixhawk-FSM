@@ -14,8 +14,8 @@
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
   <arg name="travel_max_angle"                        default="70"/>
-  <arg name="travel_speed"                            default="10"/>
-  <arg name="travel_accel"                            default="10"/>
+  <arg name="travel_speed"                            default="5"/>
+  <arg name="travel_accel"                            default="5"/>
   
   <arg name="fh_offset_x"                             default="0.42"/>
   <arg name="fh_offset_y"                             default="0.02"/>

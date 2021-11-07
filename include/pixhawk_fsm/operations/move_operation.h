@@ -7,6 +7,8 @@
 
 #include "operation.h"
 
+#include <ctime>
+
 /**
  * @brief Serves as the base for move operations such as #ExploreOperation and #TravelOperation.
  */
@@ -18,8 +20,8 @@ class MoveOperation : public Operation {
     const double position_threshold;
 
     /**
-     * @brief The highest velocity the drone can have in order to signal that it can move to the next setpoint in the
-     *        #path.
+     * @brief The highest velocity the drone can have in order to signal that it can move to the
+     * next setpoint in the #path.
      */
     const double velocity_threshold;
 
@@ -33,14 +35,18 @@ class MoveOperation : public Operation {
      */
     const double max_angle;
 
-    /**
-     * @brief Convenicene variable representing that the drone has been through all the setpoints in the #path.
-     */
-    bool been_to_all_points = false;
+    clock_t time_start, time_stop;
 
    protected:
     /**
-     * @brief Flag for forcing the operation to update the setpoint even the drone hasn't reached the setpoint.
+     * @brief Convenicene variable representing that the drone has been through all the setpoints in
+     * the #path.
+     */
+    bool been_to_all_points = false;
+
+    /**
+     * @brief Flag for forcing the operation to update the setpoint even the drone hasn't reached
+     * the setpoint.
      */
     bool update_setpoint = false;
 
@@ -75,9 +81,9 @@ class MoveOperation : public Operation {
      */
     bool hasFinishedExecution() const override;
 
-    /** 
-     * @brief Checks where the drone is at a given point and updates the #current_setpoint_iterator if
-     *        the drone has reached a setpoint.
+    /**
+     * @brief Checks where the drone is at a given point and updates the #current_setpoint_iterator
+     * if the drone has reached a setpoint.
      */
     virtual void tick() override;
 

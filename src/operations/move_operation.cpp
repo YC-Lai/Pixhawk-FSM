@@ -55,6 +55,8 @@ void MoveOperation::initialize() {
     mavros_interface.setParam("MPC_MAN_TILT_MAX", max_angle);
     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                     << ": Set max angle to: " << max_angle / 100 << " deg.");
+
+    time_start = clock();
 }
 
 void MoveOperation::tick() {
@@ -64,6 +66,14 @@ void MoveOperation::tick() {
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
+
+    time_stop = clock();
+    auto time_duration = double(time_stop - time_start) / CLOCKS_PER_SEC;
+    std::cout << time_duration << std::endl;
+    if (time_duration >= 0.08) {
+        std::cout << time_duration << std::endl;
+        update_setpoint = true;
+    }
 
     if ((at_position_target && low_enough_velocity) || update_setpoint) {
         if (current_setpoint_iterator < path.end() - 1) {

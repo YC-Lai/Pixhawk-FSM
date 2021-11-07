@@ -142,7 +142,6 @@ Pixhawk_fsm::Response Pixhawk_fsm::attemptToCreateOperation(
 std::shared_ptr<Operation> Pixhawk_fsm::performOperationTransition(
     std::shared_ptr<Operation> current_operation_ptr,
     std::shared_ptr<Operation> target_operation_ptr) {
-
     std::lock_guard<std::mutex> operation_ptr_guard(*(operation_ptr_mutex));
 
     ros::Rate rate(Pixhawk_fsm::getInstance().configuration.refresh_rate);
