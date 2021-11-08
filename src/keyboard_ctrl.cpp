@@ -12,6 +12,7 @@
 Keyboard_ctrl::Keyboard_ctrl(double height, double speed, int update_rate) : Ctrl(height) {
     shift = speed / update_rate;
     shift_angle = 0.8 * speed / update_rate;
+    setpoint_height = takeoff_height;
 }
 
 // changes the Keyboard_ctrl speed once the Keyboard_ctrl is moving
@@ -43,10 +44,10 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
                 target_pose.position.y += std::sin(current_ypr.z - PI / 2.0) * shift;
                 break;
             case MANEUVER::UP:
-                target_pose.position.z += shift;
+                setpoint_height += shift;
                 break;
             case MANEUVER::DOWN:
-                target_pose.position.z -= shift;
+                setpoint_height -= shift;
                 break;
             case MANEUVER::TURNLEFT: {
                 current_ypr.z += shift_angle;
@@ -59,6 +60,7 @@ void Keyboard_ctrl::ST_Move(std::shared_ptr<EventData> pData) {
                 break;
             }
         }
+        target_pose.position.z = setpoint_height;
 
         std::cout << "===Get target Point===" << std::endl;
         std::cout << "[Current pose]" << std::endl;

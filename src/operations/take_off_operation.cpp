@@ -72,5 +72,8 @@ void TakeOffOperation::initialize() {
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = height_setpoint;
     setpoint.yaw = getCurrentYaw();
-    mavros_interface.requestTakeOff(setpoint);
+
+    // Taking off
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to take off!");
+    // mavros_interface.requestTakeOff(setpoint);
 }

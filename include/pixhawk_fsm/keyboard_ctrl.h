@@ -46,6 +46,8 @@ class Keyboard_ctrl : public Ctrl {
      */
     double shift, shift_angle;
 
+    double setpoint_height;
+
     void ST_Move(std::shared_ptr<EventData>) override;
 };
 #endif  // _KEYBOARD_CTRL_H
