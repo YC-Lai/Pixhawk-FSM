@@ -59,5 +59,9 @@
         <arg name="ekf" value="false"/>
         <arg name="use_perception" value="false"/>
     </include>
+
+    <!-- Record -->
+    <arg name="record_cameras" default="false"/>
+    <node pkg="rosbag" type="record" name="rosbag_record_cam" args="record -o /camera/depth/color/points" if="$(arg record_cameras)" />
 </launch>
 
