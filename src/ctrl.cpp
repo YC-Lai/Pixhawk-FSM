@@ -11,7 +11,7 @@ Ctrl::Ctrl(double height) : StateMachine(ST_MAX_STATES), takeoff_height(height) 
         "pixhawk_fsm/operation_completion", &Ctrl::OperationCompletionCallback, this);
     take_off = node_handle.serviceClient<pixhawk_fsm::TakeOff>("pixhawk_fsm/take_off");
     travel = node_handle.serviceClient<pixhawk_fsm::Travel>("pixhawk_fsm/travel");
-    kb_travel = node_handle.serviceClient<pixhawk_fsm::Travel>("pixhawk_fsm/kb_travel");
+    kb_travel = node_handle.serviceClient<pixhawk_fsm::KB_Travel>("pixhawk_fsm/kb_travel");
     explore = node_handle.serviceClient<pixhawk_fsm::Explore>("pixhawk_fsm/explore");
     land = node_handle.serviceClient<pixhawk_fsm::Land>("pixhawk_fsm/land");
 

@@ -54,8 +54,8 @@ Pixhawk_fsm::Pixhawk_fsm(const PixhawkConfiguration configuration)
 bool Pixhawk_fsm::take_off(pixhawk_fsm::TakeOff::Request& request,
                            pixhawk_fsm::TakeOff::Response& response) {
     auto setpoint = std::make_shared<Setpoint_Data>();
-    setpoint->point_of_interest.x = setpoint->point_of_interest.y = 0;
-    setpoint->point_of_interest.z = request.height;
+    setpoint->point_of_interest.position.x = setpoint->point_of_interest.position.y = 0;
+    setpoint->point_of_interest.position.z = request.height;
     setpoint->target_operation = "TAKE_OFF";
 
     Response attempt_response = attemptToCreateOperation(OperationIdentifier::TAKE_OFF, setpoint);
@@ -75,8 +75,8 @@ bool Pixhawk_fsm::travel(pixhawk_fsm::Travel::Request& request,
     return true;
 }
 
-bool Pixhawk_fsm::kb_travel(pixhawk_fsm::Travel::Request& request,
-                            pixhawk_fsm::Travel::Response& response) {
+bool Pixhawk_fsm::kb_travel(pixhawk_fsm::KB_Travel::Request& request,
+                            pixhawk_fsm::KB_Travel::Response& response) {
     auto setpoint = std::make_shared<Setpoint_Data>();
     setpoint->path = request.path;
     setpoint->target_operation = "KEYBOARD";
@@ -201,7 +201,7 @@ void Pixhawk_fsm::ST_Land(EventData* pData) {
 
 void Pixhawk_fsm::ST_Takeoff(std::shared_ptr<Setpoint_Data> setpoint) {
     operation_execution_queue.emplace_back(
-        std::make_shared<TakeOffOperation>(setpoint->point_of_interest.z));
+        std::make_shared<TakeOffOperation>(setpoint->point_of_interest.position.z));
     operation_execution_queue.emplace_back(std::make_shared<HoldOperation>());
     got_new_operation = true;
 }

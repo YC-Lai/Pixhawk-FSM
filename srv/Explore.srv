@@ -1,5 +1,5 @@
-geometry_msgs/Point[] path
-geometry_msgs/Point point_of_interest
+geometry_msgs/Pose[] path
+geometry_msgs/Pose point_of_interest
 ---
 bool success 
 string message

@@ -14,21 +14,21 @@ void Trajectory_ctrl::markerCallback(const trajectory_msgs::MultiDOFJointTraject
 void Trajectory_ctrl::ST_Move(std::shared_ptr<EventData>) {
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": "
                                                       << "Current state: MOVE");
-    std::vector<geometry_msgs::Point> publish_path;
+    std::vector<geometry_msgs::Pose> publish_path;
     while (!path.empty()) {
         mav_msgs::EigenTrajectoryPoint waypoint = path.front();
         std::cout << "add point" << std::endl;
         path.pop_front();
 
-        geometry_msgs::Point publish_point;
-        publish_point.x = waypoint.position_W(0);
-        publish_point.y = waypoint.position_W(1);
-        publish_point.z = waypoint.position_W(2);
+        geometry_msgs::Pose publish_point;
+        publish_point.position.x = waypoint.position_W(0);
+        publish_point.position.y = waypoint.position_W(1);
+        publish_point.position.z = waypoint.position_W(2);
 
         publish_path.emplace_back(publish_point);
     }
 
-    geometry_msgs::Point target_point = *(publish_path.end());
+    geometry_msgs::Pose target_point = *(publish_path.end());
 
     pixhawk_fsm::Explore explore_service_handle;
     explore_service_handle.request.path = publish_path;

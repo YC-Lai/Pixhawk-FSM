@@ -12,9 +12,9 @@
 #include "mavros_interface.h"
 #include "util.h"
 
-ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path,
-                                   const geometry_msgs::Point& point_of_interest)
-    : MoveOperation(OperationIdentifier::EXPLORE, path, 1, 0.5, 1, 15),
+ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Pose>& path,
+                                   const geometry_msgs::Pose& point_of_interest)
+    : MoveOperation(OperationIdentifier::EXPLORE, path, 1, 0.5, 1, 0.1, 15),
       obstacle_avoidance_path_publisher(
           node_handle.advertise<pixhawk_fsm::Path>("/obstacle_avoidance/path", 10)),
       obstacle_avoidance_path_subscriber(node_handle.subscribe(
@@ -24,7 +24,7 @@ ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path
 void ExploreOperation::initialize() {
     // Face straight ahead
     if (path.size() == 0) {
-        path.push_back(getCurrentPose().pose.position);
+        path.push_back(getCurrentPose().pose);
     }
 
     MoveOperation::initialize();
@@ -48,11 +48,11 @@ void ExploreOperation::initialize() {
     dense_path.clear();
 
     if (original_path.size() == 1) {
-        dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);
+        dense_path.insert(dense_path.begin(), getCurrentPose().pose);
     }
 
     for (int i = 1; i < original_path.size(); i++) {
-        std::vector<geometry_msgs::Point> filler_points =
+        std::vector<geometry_msgs::Pose> filler_points =
             Util::createPath(original_path[i - 1], original_path[i], path_density);
         dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
     }
@@ -69,7 +69,7 @@ void ExploreOperation::pathCallback(pixhawk_fsm::Path corrected_path) {
         // for the iterator if the paths are different
         if (path.size() == corrected_path.points.size()) {
             for (int i = 0; i < path.size(); i++) {
-                double distance = Util::distanceBetween(path[i], corrected_path.points[i]);
+                double distance = Util::distanceBetween(path[i].position, corrected_path.points[i].position);
 
                 if (distance >= 0.01) {
                     different_path = true;
@@ -83,7 +83,7 @@ void ExploreOperation::pathCallback(pixhawk_fsm::Path corrected_path) {
 
             for (int i = 0; i < corrected_path.points.size(); i++) {
                 double distance =
-                    Util::distanceBetween(getCurrentPose().pose.position, corrected_path.points[i]);
+                    Util::distanceBetween(getCurrentPose().pose.position, corrected_path.points[i].position);
 
                 if (distance <= closest_distance) {
                     closest_distance = distance;
@@ -92,7 +92,7 @@ void ExploreOperation::pathCallback(pixhawk_fsm::Path corrected_path) {
             }
 
             if (closest_point_index != -1) {
-                path = std::vector<geometry_msgs::Point>(
+                path = std::vector<geometry_msgs::Pose>(
                     corrected_path.points.begin() + closest_point_index,
                     corrected_path.points.end());
                 current_setpoint_iterator = path.begin();
@@ -112,8 +112,8 @@ void ExploreOperation::pathCallback(pixhawk_fsm::Path corrected_path) {
 void ExploreOperation::tick() {
     MoveOperation::tick();
 
-    double dx = point_of_interest.x - getCurrentPose().pose.position.x;
-    double dy = point_of_interest.y - getCurrentPose().pose.position.y;
+    double dx = point_of_interest.position.x - getCurrentPose().pose.position.x;
+    double dy = point_of_interest.position.y - getCurrentPose().pose.position.y;
     setpoint.yaw = std::atan2(dy, dx);
 
     pixhawk_fsm::Path path_msg;

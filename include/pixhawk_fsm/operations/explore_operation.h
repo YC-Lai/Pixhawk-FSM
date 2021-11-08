@@ -26,7 +26,7 @@ class ExploreOperation : public MoveOperation {
     /**
      * @brief The path filled with points at a #path_density, passed to obstacle avoidance.
      */
-    std::vector<geometry_msgs::Point> dense_path;
+    std::vector<geometry_msgs::Pose> dense_path;
 
     /**
      * @brief Publishes the current path to obstacle avoidance.
@@ -41,12 +41,12 @@ class ExploreOperation : public MoveOperation {
     /**
      * @brief The original path the operation was initialized with.
      */
-    std::vector<geometry_msgs::Point> original_path;
+    std::vector<geometry_msgs::Pose> original_path;
 
     /**
      * @brief The corrected path from obstacle avoidance.
      */
-    std::vector<geometry_msgs::Point> corrected_path;
+    std::vector<geometry_msgs::Pose> corrected_path;
 
     /**
      * @brief Determines if the original path got set.
@@ -56,7 +56,7 @@ class ExploreOperation : public MoveOperation {
     /**
      * @brief The point of interest will be faced during exploration.
      */
-    geometry_msgs::Point point_of_interest;
+    geometry_msgs::Pose point_of_interest;
 
     /**
      * @brief Callback for the corrected path from obstacle avoidance.
@@ -72,8 +72,8 @@ class ExploreOperation : public MoveOperation {
      * @param path_with_POI A sequence of setpoints and points of interest the drone will face in
      * corresponding setpoint.
      */
-    explicit ExploreOperation(const std::vector<geometry_msgs::Point>& path,
-                              const geometry_msgs::Point& point_of_interest);
+    explicit ExploreOperation(const std::vector<geometry_msgs::Pose>& path,
+                              const geometry_msgs::Pose& point_of_interest);
 
     /**
      * @brief Sets up the #dense_path.

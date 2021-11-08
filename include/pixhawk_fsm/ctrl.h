@@ -6,6 +6,7 @@
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <pixhawk_fsm/TakeOff.h>
 #include <pixhawk_fsm/Travel.h>
+#include <pixhawk_fsm/KB_Travel.h>
 #include <ros/ros.h>
 
 #include <memory>

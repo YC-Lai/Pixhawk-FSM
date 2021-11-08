@@ -37,6 +37,12 @@ int main(int argc, char** argv) {
         } else if (c == 'd' || c == 'D') {
             data->input = MANEUVER::RIGHT;
             Keyboard_ctrl.Move(data);
+        } else if (c == 'q' || c == 'Q') {
+            data->input = MANEUVER::TURNLEFT;
+            Keyboard_ctrl.Move(data);
+        } else if (c == 'e' || c == 'E') {
+            data->input = MANEUVER::TURNRIGHT;
+            Keyboard_ctrl.Move(data);
         }
 
         ros::spinOnce();

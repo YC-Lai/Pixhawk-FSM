@@ -6,6 +6,7 @@
 #define UTIL_H
 
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <mavros_msgs/PositionTarget.h>
@@ -62,6 +63,19 @@ class Util {
     }
 
     /**
+     * @param current First point.
+     * @param target Second point.
+     *
+     * @return yaw betweeen @p current and @p target.
+     */
+    static double yawBetween(const geometry_msgs::Quaternion& current,
+                             const geometry_msgs::Quaternion& target) {
+        auto current_yaw = quaternion_to_euler_angle(current).z;
+        auto target_yaw = quaternion_to_euler_angle(target).z;
+        return abs(target_yaw - current_yaw);
+    }
+
+    /**
      * @brief Creates a path between @p first and @p last which consist of a series of points
      * between them specified by @p density.
      *
@@ -71,23 +85,23 @@ class Util {
      *
      * @return The new path with inserted points.
      */
-    static std::vector<geometry_msgs::Point> createPath(const geometry_msgs::Point& first,
-                                                        const geometry_msgs::Point& last,
-                                                        const double& density) {
-        double distance = distanceBetween(first, last);
+    static std::vector<geometry_msgs::Pose> createPath(const geometry_msgs::Pose& first,
+                                                       const geometry_msgs::Pose& last,
+                                                       const double& density) {
+        double distance = distanceBetween(first.position, last.position);
 
-        std::vector<geometry_msgs::Point> path;
+        std::vector<geometry_msgs::Pose> path;
 
-        float delta_x = last.x - first.x;
-        float delta_y = last.y - first.y;
-        float delta_z = last.z - first.z;
+        float delta_x = last.position.x - first.position.x;
+        float delta_y = last.position.y - first.position.y;
+        float delta_z = last.position.z - first.position.z;
 
         for (int i = 0; i < int(density * distance) + 1; i++) {
-            geometry_msgs::Point temp;
+            geometry_msgs::Pose temp;
 
-            temp.x = first.x + i * delta_x / (density * distance);
-            temp.y = first.y + i * delta_y / (density * distance);
-            temp.z = first.z + i * delta_z / (density * distance);
+            temp.position.x = first.position.x + i * delta_x / (density * distance);
+            temp.position.y = first.position.y + i * delta_y / (density * distance);
+            temp.position.z = first.position.z + i * delta_z / (density * distance);
             path.insert(path.end(), temp);
         }
 

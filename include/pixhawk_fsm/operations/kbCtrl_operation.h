@@ -26,9 +26,9 @@ class KbCtrlOperation : public MoveOperation {
      * @param max_angle is the maximum tilt angle of the drone during movement [deg].
      *                  This is set in the base.launch file.
      */
-    KbCtrlOperation(const std::vector<geometry_msgs::Point>& path)
+    KbCtrlOperation(const std::vector<geometry_msgs::Pose>& path)
         : MoveOperation(OperationIdentifier::KEYBOARD, path,
-                        Pixhawk_fsm::getInstance().configuration.travel_speed, 0.1, 1,
+                        Pixhawk_fsm::getInstance().configuration.travel_speed, 0.1, 1, 0.1,
                         Pixhawk_fsm::getInstance().configuration.travel_max_angle) {
         MavrosInterface mavros_interface;
         mavros_interface.setParam("MPC_ACC_HOR",

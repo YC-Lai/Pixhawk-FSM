@@ -7,6 +7,7 @@
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <pixhawk_fsm/TakeOff.h>
 #include <pixhawk_fsm/Travel.h>
+#include <pixhawk_fsm/KB_Travel.h>
 #include <ros/ros.h>
 
 #include <map>
@@ -19,8 +20,8 @@
 
 // structure to hold event data passed into state machine
 struct Setpoint_Data : public EventData {
-    geometry_msgs::Point point_of_interest;
-    std::vector<geometry_msgs::Point> path;
+    geometry_msgs::Pose point_of_interest;
+    std::vector<geometry_msgs::Pose> path;
     std::string target_operation;
 };
 
@@ -240,7 +241,7 @@ class Pixhawk_fsm : public StateMachine {
      *
      * @return true When the service call has been handled.
      */
-    bool kb_travel(pixhawk_fsm::Travel::Request& request, pixhawk_fsm::Travel::Response& response);
+    bool kb_travel(pixhawk_fsm::KB_Travel::Request& request, pixhawk_fsm::KB_Travel::Response& response);
 
     /**
      * @brief Service handler for the explore service.

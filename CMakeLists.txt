@@ -30,6 +30,7 @@ add_service_files(
         TakeOff.srv
         ObstacleAvoidanceService.srv
         Travel.srv
+        KB_Travel.srv
 )
 
 generate_messages(
