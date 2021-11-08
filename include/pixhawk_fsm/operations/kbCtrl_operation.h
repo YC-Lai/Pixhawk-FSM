@@ -28,7 +28,7 @@ class KbCtrlOperation : public MoveOperation {
      */
     KbCtrlOperation(const std::vector<geometry_msgs::Pose>& path)
         : MoveOperation(OperationIdentifier::KEYBOARD, path,
-                        Pixhawk_fsm::getInstance().configuration.travel_speed, 0.1, 1, 0.1,
+                        Pixhawk_fsm::getInstance().configuration.travel_speed, 0.1, 0.1, 0.1,
                         Pixhawk_fsm::getInstance().configuration.travel_max_angle) {
         MavrosInterface mavros_interface;
         mavros_interface.setParam("MPC_ACC_HOR",

@@ -2,11 +2,11 @@
 #define _KEYBOARD_CTRL_H
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
+#include <pixhawk_fsm/KB_Travel.h>
 #include <pixhawk_fsm/Land.h>
 #include <pixhawk_fsm/OperationCompletion.h>
 #include <pixhawk_fsm/TakeOff.h>
 #include <pixhawk_fsm/Travel.h>
-#include <pixhawk_fsm/KB_Travel.h>
 #include <ros/ros.h>
 
 #include <memory>
@@ -42,11 +42,9 @@ class Keyboard_ctrl : public Ctrl {
 
    private:
     /**
-     * @brief constant speed ardupilot parameter for the keyboard control.
+     * @brief constant pixhawk parameter for the keyboard control.
      */
-    double move_speed;
-    int update_rate;
-    double path_density;
+    double shift, shift_angle;
 
     void ST_Move(std::shared_ptr<EventData>) override;
 };

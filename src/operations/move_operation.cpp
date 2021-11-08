@@ -66,14 +66,13 @@ void MoveOperation::tick() {
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
-
     bool at_yaw_target = Util::yawBetween(getCurrentPose().pose.orientation,
                                           current_setpoint_iterator->orientation) < yaw_threshold;
 
     time_stop = clock();
     auto time_duration = double(time_stop - time_start) / CLOCKS_PER_SEC;
-    std::cout << time_duration << std::endl;
-    if (time_duration >= 0.08) {
+    // std::cout << "time: " << time_duration << std::endl;
+    if (time_duration >= 0.02 && low_enough_velocity) {
         update_setpoint = true;
     }
 
