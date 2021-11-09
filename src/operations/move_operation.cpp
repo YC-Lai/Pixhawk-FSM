@@ -48,7 +48,7 @@ void MoveOperation::initialize() {
     }
 
     // MavrosInterface mavros_interface;
-    // mavros_interface.setParam("MPC_XY_VEL_ALL", speed);
+    // mavros_interface.setParam("MPC_XY_CRUISE", speed);
     // ROS_INFO_STREAM(ros::this_node::getName().c_str()
     //                 << ": Set speed to: " << speed / 100 << " m/s.");
 
