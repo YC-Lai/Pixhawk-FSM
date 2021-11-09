@@ -61,7 +61,28 @@
     </include>
 
     <!-- Record -->
-    <arg name="record_cameras" default="false"/>
-    <node pkg="rosbag" type="record" name="rosbag_record_cam" args="record -o /camera/depth/color/points" if="$(arg record_cameras)" />
+    <arg name="record_cameras" default="true"/>
+    <node pkg="rosbag" type="record" name="rosbag_record_cam" args="record -O $HOME/2021_11_8.bag
+    /camera/odom/sample
+    /d435/color/camera_info 
+    /d435/color/image_raw 
+    /d435/depth/camera_info
+    /d435/depth/image_rect_raw
+    /tf
+    /tf_static" if="$(arg record_cameras)" />
+
+    <!-- voxgraph -->
+    <arg name="launch_voxgraph" default="false"/>
+    <group if="$(arg launch_voxgraph)">
+        <arg name="odom_frame" default="odom" />
+        <arg name="base_link_frame" default="base_link" />
+        <include file="$(find pixhawk_fsm)/launch/base/voxgraph.launch">
+            <arg name="pointcloud_topic" value="d435/depth/color/points" />
+            <arg name="debug_mode" value="false" />
+            <arg name="show_rviz" value="true" />
+            <arg name="odom_frame" default="$(arg odom_frame)" />
+            <arg name="base_link_frame" default="$(arg base_link_frame)" />
+        </include>
+    </group>
 </launch>
 

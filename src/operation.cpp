@@ -72,6 +72,7 @@ void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_
     do {
         tick();
         if (autoPublish) publishSetpoint();
+        // Publish the setpoint marker
         Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.setpoint.x = setpoint.position.x;
         Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.setpoint.y = setpoint.position.y;
         Pixhawk_fsm::getInstance().getStatusPublisherPtr()->status.setpoint.z = setpoint.position.z;

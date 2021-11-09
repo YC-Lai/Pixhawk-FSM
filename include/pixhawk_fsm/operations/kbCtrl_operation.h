@@ -30,12 +30,12 @@ class KbCtrlOperation : public MoveOperation {
         : MoveOperation(OperationIdentifier::KEYBOARD, path,
                         Pixhawk_fsm::getInstance().configuration.travel_speed, 0.1, 0.1, 0.1,
                         Pixhawk_fsm::getInstance().configuration.travel_max_angle) {
-        MavrosInterface mavros_interface;
-        mavros_interface.setParam("MPC_ACC_HOR",
-                                  Pixhawk_fsm::getInstance().configuration.travel_accel * 100);
-        ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                        << ": Set max acceleration to: "
-                        << Pixhawk_fsm::getInstance().configuration.travel_accel << " m/s2.");
+        // MavrosInterface mavros_interface;
+        // mavros_interface.setParam("MPC_ACC_HOR",
+        //                           Pixhawk_fsm::getInstance().configuration.travel_accel * 100);
+        // ROS_INFO_STREAM(ros::this_node::getName().c_str()
+        //                 << ": Set max acceleration to: "
+        //                 << Pixhawk_fsm::getInstance().configuration.travel_accel << " m/s2.");
     }
 };
 

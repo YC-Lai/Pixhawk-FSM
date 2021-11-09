@@ -1,0 +1,30 @@
+<launch>
+    <!-- User supplied arguments -->
+    <arg name="pointcloud_topic" doc="ROS topic for pointcloud input"/>
+    <arg name="debug_mode" default="false" doc="Run the mapper in debug mode." />
+    <arg name="show_rviz" default="false" doc="Automatically launch Rviz." />
+
+    <arg name="odom_frame" default="map" />
+    <arg name="base_link_frame" default="base_link" />
+
+    <!-- Run voxgraph -->
+    <group>
+        <arg unless="$(arg debug_mode)" name="launch_prefix" value="" />
+        <arg if="$(arg debug_mode)" name="launch_prefix" value="gdb -ex run --args" />
+
+        <node name="voxgraph_mapper" pkg="voxgraph" type="voxgraph_mapping_node" output="screen" launch-prefix="$(arg launch_prefix)">
+            <rosparam file="$(find auto_uav)/config/voxgraph_mapper.yaml" />
+            <param name="input_odom_frame" value="$(arg odom_frame)" />
+            <param name="output_odom_frame" value="$(arg odom_frame)" />
+            <param name="input_base_link_frame" value="$(arg base_link_frame)" />
+            <param name="output_base_link_frame" value="$(arg base_link_frame)" />
+            <param name="pointcloud_topic" value="$(arg pointcloud_topic)" />
+        </node>
+    </group>
+
+    <!-- Show Rviz -->
+    <group if="$(arg show_rviz)">
+        <arg name="rviz_file" default="$(find pixhawk_fsm)/rviz_configs/voxgraph_mapper.rviz" />
+        <node pkg="rviz" type="rviz" name="$(anon rviz)" output="screen" args="-d $(arg rviz_file)" />
+    </group>
+</launch>

@@ -47,14 +47,14 @@ void MoveOperation::initialize() {
         setpoint.yaw = std::atan2(dy, dx);
     }
 
-    MavrosInterface mavros_interface;
-    mavros_interface.setParam("MPC_XY_VEL_ALL", speed);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                    << ": Set speed to: " << speed / 100 << " m/s.");
+    // MavrosInterface mavros_interface;
+    // mavros_interface.setParam("MPC_XY_VEL_ALL", speed);
+    // ROS_INFO_STREAM(ros::this_node::getName().c_str()
+    //                 << ": Set speed to: " << speed / 100 << " m/s.");
 
-    mavros_interface.setParam("MPC_MAN_TILT_MAX", max_angle);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                    << ": Set max angle to: " << max_angle / 100 << " deg.");
+    // mavros_interface.setParam("MPC_MAN_TILT_MAX", max_angle);
+    // ROS_INFO_STREAM(ros::this_node::getName().c_str()
+    //                 << ": Set max angle to: " << max_angle / 100 << " deg.");
 
     time_start = clock();
 }
