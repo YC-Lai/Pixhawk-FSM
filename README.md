@@ -17,15 +17,13 @@ We utilize the Gazobo drone model create by this repository for simulation. ( yo
 
 
 ## Usage
-- ### Run the simulator and use keyboard to control the drone
+- Run the simulator and use keyboard to control the drone
     ```
     roscd pixhawk_fsm
     ./scripts/px4_stil.sh
     rosrun pixhawk_fsm keyboard_client
     ```
-- ### Using keyboard to control the MAV in real world
-    
-
+- Using keyboard to control the MAV in real world
     ```
     rosrun pixhawk_fsm keyboard_client
     ```
