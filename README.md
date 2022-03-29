@@ -4,6 +4,10 @@ The following fig is an experiment which testing on custom Pixhawk drone in the 
 
 ![cover](fig/test.gif)
 
+Work with SLAM:  
+![cover](fig/SLAM_demo2.gif)
+
+
 ## Dependencies for Running Locally
 1. [Ros Melodic](http://wiki.ros.org/melodic/Installation) 
 2. [MAVROS](https://github.com/mavlink/mavros)
