@@ -5,7 +5,7 @@ The following fig is an experiment which testing on custom Pixhawk drone in the 
 ![cover](fig/test.gif)
 
 Work with SLAM:  
-![cover](fig/SLAM_demo2.gif)
+[![SLAM](http://img.youtube.com/vi/SCfZ7u6d8cw/0.jpg)](http://www.youtube.com/watch?v=SCfZ7u6d8cw)
 
 
 ## Dependencies for Running Locally
