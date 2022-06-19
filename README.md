@@ -26,6 +26,7 @@ Ubuntu 18.04 (ROS melodic) were tested.
     ```
     roscd pixhawk_fsm
     ./scripts/px4_stil.sh
+    roslaunch pixhawk_fsm simulator.launch
     rosrun pixhawk_fsm keyboard_client
     ```
 - Using keyboard to control the MAV in **real world**:
